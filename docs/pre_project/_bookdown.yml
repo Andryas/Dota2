@@ -1,0 +1,18 @@
+output_dir: "output"
+book_filename: "bookdown"
+delete_merged_file: true
+language:
+  label:
+    fig: 'Figura '
+    tab: 'Tabela '
+    eq: 'Equação '
+    thm: 'Teorema '
+    lem: 'Lema '
+    def: 'Definição '
+    cor: 'Corolário '
+    prp: 'Proposição '
+    ex: 'Exemplo '
+    proof: 'Prova. '
+    remark: 'Remark. '
+ui:
+  chapter_name: " "
