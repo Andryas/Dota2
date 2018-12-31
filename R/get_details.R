@@ -17,7 +17,7 @@ library(dplyr)
 args <- commandArgs(TRUE)
 
 # args <- c("1C0E621C134D76AFF6ECF401EE4681D0",
-#           "/home/andryas/DotA2/data/id/id-2018-12-25-1.RData"
+#           "/home/andryas/DotA2/data/id/id-2018-12-28-1.RData"
 #           )
 
 if (is.null(args[1])) stop("An api key is required.")
@@ -30,6 +30,12 @@ key_actions(action = "register_key", value = args[1])
 setwd("~/DotA2/data/id")
 
 id <- readRDS(args[2])
+
+# ------------------------------------------------------------------------------
+# Log
+# ------------------------------------------------------------------------------
+log <- file(paste0(args[2], ".log"), open = "wt")
+sink(log, type = "message")
 
 # ------------------------------------------------------------------------------
 # MongoDB
@@ -70,13 +76,26 @@ while (length(id) > 0) {
         silent = TRUE
     )
 
-    if (class(content) == "try-error" | "error" %in% names(content$content)) {
+    if (class(content) == "try-error") {
         if (is.numeric(badid)) {
+            badid <- c(badid, id[1])
             saveRDS(badid, paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+            id <- id[-1]
+            next
         }
-        id <- id[-1]
-        next
     }
+
+    if ("content" %in% names(content)) {
+        if ("error" %in% names(content[["content"]])) {
+            if (is.numeric(badid)) {
+                badid <- c(badid, id[1])
+                saveRDS(badid, paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+                id <- id[-1]
+                next
+            }
+        }
+    }
+
 
     # https://partner.steamgames.com/doc/webapi_overview/responses
     # 200: success
@@ -245,50 +264,50 @@ while (length(id) > 0) {
                         # Update collect player with all players of this match
                         # ------------------------------------------------------
 
-                        for (A in 1:10) {
-                            players2 <- content2$content$players
-                            players2 <- lapply(players2, function(x) {
-                                if ("ability_upgrades" %in% names(x)) {
-                                    players2_au <<- x$ability_upgrades
-                                    cbind.data.frame(x[-which(names(x) == "ability_upgrades")])
-                                } else {
-                                    players2_au <<- NULL
-                                    cbind.data.frame(x)
-                                }
-                            }) %>%
-                                bind_rows() %>%
-                                mutate(position = 1:10)
-
-                            players2 <- players2 %>%
-                                # filter(account_id == players$account_id[w]) %>%
-                                filter(account_id == players2$account_id[A] & position == A) %>%
-                                mutate(
-                                    duration = content2$content$duration,
-                                    radiant_win = content2$content$radiant_win,
-                                    start_time = content2$content$start_time,
-                                    match_seq_num = content2$content$match_seq_num,
-                                    match_id = content2$content$match_id
-                                )
-
-                            if (is.null(players2_au)) {
-                                players3 <- list("$addToSet" = list(details = as.list(players2)))
+                        # for (A in 1:10) {
+                        players2 <- content2$content$players
+                        players2 <- lapply(players2, function(x) {
+                            if ("ability_upgrades" %in% names(x)) {
+                                players2_au <<- x$ability_upgrades
+                                cbind.data.frame(x[-which(names(x) == "ability_upgrades")])
                             } else {
-                                players3 <- list("$addToSet" = list(details = append(as.list(players2),
-                                                                                     content2$content$players[[players2$position]])))
+                                players2_au <<- NULL
+                                cbind.data.frame(x)
                             }
+                        }) %>%
+                            bind_rows() %>%
+                            mutate(position = 1:10)
 
-                            ## PRIVATE ID's
-                            if (players2$account_id %in% c(4294967295)) {
-                                next
-                            } else {
-                                # Update account_id with the new informations about the player
-                                m2$update(
-                                       query = paste0('{"_id":', players2$account_id, '}'),
-                                       update =  toJSON(players3, auto_unbox = TRUE),
-                                       upsert = TRUE
-                                   )
-                            }
+                        players2 <- players2 %>%
+                            filter(account_id == players$account_id[w]) %>%
+                            # filter(account_id == players2$account_id[A] & position == A) %>%
+                            mutate(
+                                duration = content2$content$duration,
+                                radiant_win = content2$content$radiant_win,
+                                start_time = content2$content$start_time,
+                                match_seq_num = content2$content$match_seq_num,
+                                match_id = content2$content$match_id
+                            )
+
+                        if (is.null(players2_au)) {
+                            players3 <- list("$addToSet" = list(details = as.list(players2)))
+                        } else {
+                            players3 <- list("$addToSet" = list(details = append(as.list(players2),
+                                                                                 content2$content$players[[players2$position]])))
                         }
+
+                        ## PRIVATE ID's
+                        # if (players2$account_id %in% c(4294967295)) {
+                        # next
+                        # } else {
+                        # Update account_id with the new informations about the player
+                        m2$update(
+                               query = paste0('{"_id":', players2$account_id, '}'),
+                               update =  toJSON(players3, auto_unbox = TRUE),
+                               upsert = TRUE
+                           )
+                        # }
+                        # }
 
                         N <- N - 1
                         i <- i + 1
@@ -317,3 +336,10 @@ while (length(id) > 0) {
 
     id <- id[-1]
 }
+
+# End log
+sink(type = "message")
+close(log)
+
+file.remove(args[2])
+file.remove(paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
