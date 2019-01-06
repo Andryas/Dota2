@@ -16,9 +16,8 @@ library(dplyr)
 # 2: .RData of ID's is required
 args <- commandArgs(TRUE)
 
-# args <- c("1C0E621C134D76AFF6ECF401EE4681D0",
-#           "/home/andryas/DotA2/data/id/id-2018-12-28-1.RData"
-#           )
+# args <- c(readRDS("~/DotA2/data/keyapi.RData")[1],
+#           "id-pro-2019-01-01-.RData")
 
 if (is.null(args[1])) stop("An api key is required.")
 if (is.null(args[2])) print(".RData of ID's is required.")
@@ -30,12 +29,6 @@ key_actions(action = "register_key", value = args[1])
 setwd("~/DotA2/data/id")
 
 id <- readRDS(args[2])
-
-# ------------------------------------------------------------------------------
-# Log
-# ------------------------------------------------------------------------------
-log <- file(paste0(args[2], ".log"), open = "wt")
-sink(log, type = "message")
 
 # ------------------------------------------------------------------------------
 # MongoDB
@@ -96,7 +89,6 @@ while (length(id) > 0) {
         }
     }
 
-
     # https://partner.steamgames.com/doc/webapi_overview/responses
     # 200: success
     # 400: Bad request
@@ -107,12 +99,21 @@ while (length(id) > 0) {
     # 500: Internet server error
     # 503: Service unvavailable
 
+    if (content$response[["status_code"]] %in% c(401, 403)) {
+        cat(paste0("Access is denied. Retrying will not help.",
+                   "Please verify your key= parameter.\n\n", args[1]),
+            file = paste0("log", args[2], ".log"))
+        file.remove(args[2])
+        stop(paste0("Access is denied. Retrying will not help.",
+                    "Please verify your key= parameter."))
+    }
+
     if (content$response[["status_code"]] %in% c(503, 429, 500)) {
         Sys.sleep(20)
         next
     }
 
-    if (content$response[["status_code"]] %in% c(400, 401, 403, 404)) {
+    if (content$response[["status_code"]] %in% c(400, 404)) {
         badid <- c(badid, id[1])
         if (is.numeric(badid)) {
             saveRDS(badid, paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
@@ -292,8 +293,9 @@ while (length(id) > 0) {
                         if (is.null(players2_au)) {
                             players3 <- list("$addToSet" = list(details = as.list(players2)))
                         } else {
-                            players3 <- list("$addToSet" = list(details = append(as.list(players2),
-                                                                                 content2$content$players[[players2$position]])))
+                            players3 <- list("$addToSet" =
+                               list(details = append(as.list(players2),
+                             content2$content$players[[players2$position]]$ability_upgrades)))
                         }
 
                         ## PRIVATE ID's
@@ -337,9 +339,5 @@ while (length(id) > 0) {
     id <- id[-1]
 }
 
-# End log
-sink(type = "message")
-close(log)
-
 file.remove(args[2])
-file.remove(paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+# file.remove(paste0(gsub(".RData", "", args[2]), "bad_id.RData"))

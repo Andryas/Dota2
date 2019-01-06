@@ -30,6 +30,12 @@ if (any(grepl("id.RData", list.files()))) {
   id <- c()
 }
 
+if (any(grepl("id_pro.RData", list.files()))) {
+  id2 <- readRDS("id_pro.RData")
+} else {
+  id2 <- c()
+}
+
 # Save the day
 today_ <- Sys.Date()
 i <- 1
@@ -80,17 +86,22 @@ while (TRUE) {
 
     new_id2 <- unlist(c(new_id, new_id_pro, new_id_pro2, new_id_pro3))
 
-    id <- unique(c(id, new_id2))
+    id <- unique(c(id, new_id))
+    id2 <- unique(new_id2)
 
     ## The idea is to save the id's match of today with a name that doesnt
     ## hinder the collection of these IDS by the computer that will process them.
     if (i %% 2 == 0) {
         saveRDS(id, "id.RData")
+        saveRDS(id2, "id_pro.RData")
+
         if (today_ < Sys.Date()) {
             ## Save the id
             file.rename("id.RData", paste0("id-", today_, "-.RData"))
+            file.rename("id_pro.RData", paste0("id-pro-", today_, "-.RData"))
             today_ <- Sys.Date()
             id <- c()
+            id2 <- c()
         }
         i <- i + 1
     }
