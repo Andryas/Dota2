@@ -15,6 +15,8 @@ dashboardPagePlus(
         )
     ),
     dashboardBody(
+        useShinyjs(),
+        useShinyalert(),
         tabItems(
             # ------------------------------------------------------------------
             # BET
@@ -30,13 +32,10 @@ dashboardPagePlus(
             # Database
             # ------------------------------------------------------------------
             tabItem("database",
-                    column(6, align = "center",
-                           h1("Informações sobre a coleta e configurações")),
-                    column(6, align = "center",
-                           h1("Dicionário"))
+                    source(file.path("ui", "database.R"), local = TRUE)$value
                     )
-        )
 
-    ),
-    rightSidebar()
+        ),
+        rightSidebar()
+    )
 )

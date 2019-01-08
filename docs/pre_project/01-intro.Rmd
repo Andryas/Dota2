@@ -1,21 +1,38 @@
-# Introduction {#intro}
+# Introdução {#intro}
 
-You can label chapter and section titles using `{#label}` after them, e.g., we can reference Chapter \@ref(intro). If you do not manually label them, there will be automatic labels anyway, e.g., Chapter \@ref(methods).
+Os jogos estão presentes na vida das pessoas a muitos séculos, um tipo de jogo
+de azar antigo que se conhece foi uma espécie de jogo de dados com o chamado
+astrágalo. [Desafio aos Deuses pg 12].
 
-Figures and tables with captions will be placed in `figure` and `table` environments, respectively.
 
-```{r nice-fig, fig.cap='Here is a nice figure!', out.width='80%', fig.asp=.75, fig.align='center'}
-par(mar = c(4, 4, .1, .1))
-plot(pressure, type = 'b', pch = 19)
-```
+Dos astrágalos da Grécia antiga aos videogames e jogos de computador.
+Joga-se por diversão, por lazer e pelas substâncias de recompensa em se ganhar
+uma aposta.
 
-Reference a figure by its code chunk label with the `fig:` prefix, e.g., see Figure \@ref(fig:nice-fig). Similarly, you can reference tables generated from `knitr::kable()`, e.g., see Table \@ref(tab:nice-tab).
 
-```{r nice-tab, tidy=FALSE}
-knitr::kable(
-  head(iris, 20), caption = 'Here is a nice table!',
-  booktabs = TRUE
-)
-```
+o fazem ao desenvolvimento tecnologico, social e economico. Os números não
+mentem. A capacidade computacional teve um grande ganho com a vinda das famosas
+placas de videos, o qual tinha por objetivo fomentar a industria de jogos que
+estava crescendo rapidamente em meados de 2005. Contudo, teve-se a brilhante
+ideia de não utiliza-la tão somente para o processamento de imagens e aumento de
+fdps. Mas também ao processamento de dados!
 
-You can write citations, too. For example, we are using the **bookdown** package [@R-bookdown] in this sample book, which was built on top of R Markdown and **knitr** [@xie2015].
+Com a chegada dos smartphones juntamente com seu custo reduzido, todos pudemos
+adquirir um e nos conectarmos a matrix. Quando conectados, pudemos compartilhar
+alimentos em nossas fazendas virtuais felizes e até mesmo roubar algumas
+fazendas virtuais felizes. Pudemos muito mais do que isso, interagir com outras
+pessoas e construir grupos de amizades, ou até mesmo "guides" para enviar tropas
+e materiais primas para nossos companheiros em guerra.
+
+
+
+Jogos são objetos de entreterimento e diversão que em um primeiro momento
+parecem inofensivos e legais, porém a mais neles do que pode-se observar ao
+olhar descuidado de uma primeira observação. Jogos são sinonimo de estatística,
+mas uma estatística muita mais complexa e natural, onde atráves de mecanismos
+evolutivos é exercida com uma certa precisão. Não é atoa que o começo a
+formalização da estatística tenha suas primeiras teorias em volta de jogos,
+Cardano deixa claro seus interesses quando começa a escrever as primeiras linhas
+sobre probabilidade e diz que seu interesse era criar uma teoria para jogos que
+consequentemente foi a base para a estatpistica que viria a ser desenvolvida no
+seculo seguinte.

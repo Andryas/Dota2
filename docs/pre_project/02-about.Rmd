@@ -1,3 +1,52 @@
-# Literature
+# O jogo
 
-Here is a review of existing methods.
+# ------------------------------------------------------------------------------
+Descrever aonde acontece o jogo, explicando a divisão dos times, do mapa e a
+ideia do jogo.
+
+Descrever os personagens e a complexidade do jogo.
+
+Descrever os modos de jogo e quais serão o foco.
+
+Breve descrição do funcionamento dos torneios.
+# ------------------------------------------------------------------------------
+
+
+O jogo Defense of the Ancients (DotA2) ocorre em uma arena fechada. No canto
+inferior esquerdo do mapa fica o time dos Iluminados (Radiant) e no canto superior
+direito o time dos Temidos (Dired). O mapa é divido em três caminhos, usualmente
+chamados de, caminho de cima (Top), caminho do meio (Mid) e caminho de baixo
+(Bot). Entre os caminhos existe a floresta com acampamentos com diversas
+criaturas como centauros, dwarfs e outrous animais misticos. Abaixo tem-se uma
+figura ilustrativa do mapa do jogo.
+
+IMAGEM ILUSTRATIVA DO MAPA
+
+IMAGEM ILUSTRATIVA DA VISÃO DO JOGADOR
+
+O objetivo é destruir a estrutura central chamada de Anciente, o qual faz jus ao
+proprio nome do jogo, que está localizada no centro de cada time. Para tal, é
+necessário avançar por um dos três caminhos, os quais possuem estruturas que
+defendem o avanço do openente para sua base. Somente pode-se destruir o Anciente
+do time adversario se algum dos três caminhos foi destruido todas as torres,
+caso contrario não se pode destruir. Dentro do jogo existe um item chamado de
+Teletransporte o qual permite o jogador se teletransportar para alguma de susas
+estruturas, o que da mais mobilidade no jogo, assim a estrátegia usualmente
+empregada é a destruição de todas as torres localizadas fora da base pois reduz
+a mobilidade do time adversario.
+
+
+IMAGEM ILUSTRATIVA DO ANCIENTE
+
+IMAGEM ILUSTRATIVA DE ALGUMAS CRIATURAS E DAS TORRES
+
+O enfoque até o presente momento foi dado a questões geográficas, as quais são
+importantes pois é onde o jogo ocorre.
+
+
+São 10 jogadores ao todo dividos em 2 times de 5.
+Cada jogador no inicio da partida pode escolher 1 dos 123 (Fev/2019) heróis
+possíveis, ou seja, cada jogador escolhera um único personagem (herói) que
+encorpora diversas habilidades, forças e fraquezas, Estes heróis tem
+caracteristicas semelhantes a jogos de RPG onde os personagens são dividos , em
+geral, em Força, Agilidade e Inteligência.
