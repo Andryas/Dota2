@@ -20,6 +20,30 @@ n <- length(keyapi)
 path <- normalizePath("~/DotA2/R/get_details.R")
 setwd("~/DotA2/data/id/")
 
+
+# Stats database
+if (file.exists("~/DotA2/data/stats.RData")) {
+    stats <- readRDS("~/DotA2/data/stats.RData")
+    if (stats[nrow(stats), ]$data != Sys.Date()) {
+        stats2 <- data.frame(data = Sys.Date(),
+                             match = m$info()$stats$count,
+                             player = m2$info()$stats$count,
+                             stringsAsFactors = FALSE
+                             )
+        stats <- rbind(stats, stats2)
+        saveRDS(stats, "~/DotA2/data/stats.RData")
+        rm(stats)
+    }
+} else {
+    stats <- data.frame(data = Sys.Date(),
+                        match = m$info()$stats$count,
+                        player = m2$info()$stats$count,
+                        stringsAsFactors = FALSE
+                        )
+    saveRDS(stats, "~/DotA2/data/stats.RData")
+    rm(stats)
+}
+
 ## amazon
 cmd <- readRDS("~/DotA2/data/cmd.RData")
 system(eval(cmd[[1]])) # skill = 3
