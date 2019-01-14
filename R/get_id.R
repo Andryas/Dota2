@@ -10,6 +10,7 @@ library(RDota2)
 # ------------------------------------------------------------------------------
 # 1: keyapi
 # 2: local, if 1 (local) else 0
+
 args <- commandArgs(TRUE)
 
 if (is.null(args[1])) stop("An api key is required.")
@@ -46,12 +47,9 @@ while (TRUE) {
     # https://wiki.teamfortress.com/wiki/WebAPI/GetMatchHistory
     ## skill: bracket Very High
     ## min_players: minimum amount of players in a match
-    ## game_mode: (1) All pick, (2) Captain's mode,
-    ##            (14) Compendium Matchmaking and (22) Ranked Matchmaking
+    ## game_mode: (22) Ranked Matchmaking
     new_id <- try(get_match_history(skill = 3,
-                                    min_players = 10,
-                                    game_mode = paste0(1, 2, 14, 22,
-                                                       collapse = ";")))
+                                    min_players = 10))
 
     if (class(new_id) == "try-error") {
         next

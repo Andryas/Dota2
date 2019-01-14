@@ -17,11 +17,11 @@ library(dplyr)
 args <- commandArgs(TRUE)
 
 # args <- c(readRDS("~/DotA2/data/keyapi.RData")[1],
-#           "id-pro-2019-01-01-.RData")
+#           "id-2019-01-03-.RData")
 
-if (is.null(args[1])) stop("An api key is required.")
-if (is.null(args[2])) print(".RData of ID's is required.")
-if (!file.exists(args[2])) stop("This files doens't exist.")
+# if (is.null(args[1])) stop("An api key is required.")
+# if (is.null(args[2])) print(".RData of ID's is required.")
+# if (!file.exists(args[2])) stop("This files doens't exist.")
 
 # register key
 key_actions(action = "register_key", value = args[1])
@@ -60,6 +60,7 @@ id <- id[!(id %in% badid)]
 # Collect Details
 # ------------------------------------------------------------------------------
 while (length(id) > 0) {
+
     content <-  try(
         R.utils::withTimeout(
                      get_match_details(match_id = id[1]),
@@ -141,7 +142,7 @@ while (length(id) > 0) {
         bind_rows() %>%
         select(account_id, hero_id)
 
-    ## (STOP) If have less than 10 players DELETE go to NEXT ID
+    ## If have less than 10 players DELETE go to NEXT ID
     if (nrow(players) != 10) {
         badid <- c(badid, id[1])
         if (is.numeric(badid)) {
@@ -151,183 +152,193 @@ while (length(id) > 0) {
         next
     }
 
-    # For each player get the last matches played
-    w <- 1
-    while (w <= 10) {
-        # cat(w, sep = "\n")
-        info2 <- get_match_history(
-            account_id = players$account_id[w],
-            skill = 3,
-            min_players = 10,
-            # The same as the MATCH that is getting the data
-            game_mode = content$content$game_mode
-        )
+    ## If have PRIVATE ACCOUNT
+    if (length(unique(players$account_id)) == 10) {
+        # For each player get the last matches played
+        w <- 1
+        while (w <= 10) {
+            # cat(w, sep = "\n")
+            info2 <- get_match_history(
+                account_id = players$account_id[w],
+                skill = 3,
+                min_players = 10,
+                # The same as the MATCH that is getting the data
+                game_mode = content$content$game_mode
+            )
 
-        # while (info2$response[["status_code"]] != 200) {
-        #     # ?get_match_history
-        #     info2 <- get_match_history(
-        #         account_id = players$account_id[w],
-        #         skill = 3,
-        #         min_players = 10,
-        #         # The same as the MATCH that is getting the data
-        #         game_mode = content$content$game_mode
-        #     )
-        #
-        #     if (info2$response[["status_code"]] %in% c(429, 500, 503)) Sys.sleep(60)
-        #     if (!(info2$response[["status_code"]] %in% c(200, 429, 500, 503, 1))) {
-        #         info2$content[[1]] <- NULL
-        #         break
-        #     }
-        # }
+            # while (info2$response[["status_code"]] != 200) {
+            #     # ?get_match_history
+            #     info2 <- get_match_history(
+            #         account_id = players$account_id[w],
+            #         skill = 3,
+            #         min_players = 10,
+            #         # The same as the MATCH that is getting the data
+            #         game_mode = content$content$game_mode
+            #     )
+            #
+            #     if (info2$response[["status_code"]] %in% c(429, 500, 503)) Sys.sleep(60)
+            #     if (!(info2$response[["status_code"]] %in% c(200, 429, 500, 503, 1))) {
+            #         info2$content[[1]] <- NULL
+            #         break
+            #     }
+            # }
 
-        if (!is.null(info2$content[[1]])) {
+            if (!is.null(info2$content[[1]])) {
 
-            info2 <-
-                lapply(info2$content$matches, function(x)
-                    cbind.data.frame(
-                        match_id = x$match_id,
-                        start_time = x$start_time
-                    )) %>%
-                bind_rows()
+                info2 <-
+                    lapply(info2$content$matches, function(x)
+                        cbind.data.frame(
+                            match_id = x$match_id,
+                            start_time = x$start_time
+                        )) %>%
+                    bind_rows()
 
-            # picks matches previous the current match
-            # as.POSIXct(info2$start_time, origin = "1970-01-01")
-            # as.POSIXct(content$content$start_time, origin = "1970-01-01")
-            info2 <- info2 %>%
-                filter(
-                    start_time < content$content$start_time &
-                    start_time >= as.integer(
-                                      as.POSIXct(content$content$start_time,
-                                                 origin = "1970-01-01") - base::months(3))
-                ) %>%
-                pull(match_id)
+                # picks matches previous the current match
+                # as.POSIXct(info2$start_time, origin = "1970-01-01")
+                # as.POSIXct(content$content$start_time, origin = "1970-01-01")
+                info2 <- info2 %>%
+                    filter(
+                        start_time < content$content$start_time &
+                        start_time >= as.integer(
+                                          as.POSIXct(content$content$start_time,
+                                                     origin = "1970-01-01") - base::months(3))
+                    ) %>%
+                    pull(match_id)
 
-            # Stored Matches
-            sm <- m2$find(
-                         query = paste0('{"_id": ', players$account_id[w], '}'),
-                         fields = paste0('{"details.match_id": true }')
-                     )
+                # Stored Matches
+                sm <- m2$find(
+                             query = paste0('{"_id": ', players$account_id[w], '}'),
+                             fields = paste0('{"details.match_id": true }')
+                         )
 
-            ## Just matches that aren't stored in MongoPlayer
-            if (nrow(sm) != 0) {
-                info2 <- info2[!(info2 %in% sm$details[[1]]$match_id)]
-            }
-
-            i <- 1
-            N <- 50
-
-            ## Coleta as últimas partidas (i) do jogador (w)
-            while (N != 0 & i <= length(info2)) {
-
-                content2 <- try(
-                    R.utils::withTimeout(
-                                 get_match_details(match_id = info2[i]),
-                                 timeout = 5,
-                                 onTimeout = "silent"
-                             ),
-                    silent = TRUE
-                )
-
-                if (class(content2) == "try-error") {
-                    i <- i + 1
-                    next
+                ## Just matches that aren't stored in MongoPlayer
+                if (nrow(sm) != 0) {
+                    info2 <- info2[!(info2 %in% sm$details[[1]]$match_id)]
                 }
 
-                # while (content2$response[["status_code"]] !=  200) {
-                #     content2 <- try(
-                #         R.utils::withTimeout(
-                #                      get_match_details(match_id = info2[i]),
-                #                      timeout = 5,
-                #                      onTimeout = "silent"
-                #                  ),
-                #         silent = TRUE
-                #     )
-                #
-                #     if (class(content2) == "try-error") {
-                #         content2 <- NULL
-                #         break
-                #     }
-                #
-                #     if (content2$response[["status_code"]] %in% c(429, 500, 503)) Sys.sleep(60)
-                #     if (!(content2$response[["status_code"]] %in%  c(1, 200, 429, 500, 503))) {
-                #         content2 <- NULL
-                #         break
-                #     }
-                # }
+                i <- 1
+                N <- 50
 
-                # the match needs to be longer than 900 seconds.
-                if (!is.null(content2) &
-                    !("error" %in% names(content2$content))) {
-                    if (content2$content$duration >= 900 &
-                        length(content2$content$players) == 10) {
+                ## Coleta as últimas partidas (i) do jogador (w)
+                while (N != 0 & i <= length(info2)) {
 
-                        # ------------------------------------------------------
-                        # Update collect player with all players of this match
-                        # ------------------------------------------------------
+                    content2 <- try(
+                        R.utils::withTimeout(
+                                     get_match_details(match_id = info2[i]),
+                                     timeout = 5,
+                                     onTimeout = "silent"
+                                 ),
+                        silent = TRUE
+                    )
 
-                        # for (A in 1:10) {
-                        players2 <- content2$content$players
-                        players2 <- lapply(players2, function(x) {
-                            if ("ability_upgrades" %in% names(x)) {
-                                players2_au <<- x$ability_upgrades
-                                cbind.data.frame(x[-which(names(x) == "ability_upgrades")])
-                            } else {
-                                players2_au <<- NULL
-                                cbind.data.frame(x)
-                            }
-                        }) %>%
-                            bind_rows() %>%
-                            mutate(position = 1:10)
-
-                        players2 <- players2 %>%
-                            filter(account_id == players$account_id[w]) %>%
-                            # filter(account_id == players2$account_id[A] & position == A) %>%
-                            mutate(
-                                duration = content2$content$duration,
-                                radiant_win = content2$content$radiant_win,
-                                start_time = content2$content$start_time,
-                                match_seq_num = content2$content$match_seq_num,
-                                match_id = content2$content$match_id
-                            )
-
-                        if (is.null(players2_au)) {
-                            players3 <- list("$addToSet" = list(details = as.list(players2)))
-                        } else {
-                            players3 <- list("$addToSet" =
-                               list(details = append(as.list(players2),
-                             content2$content$players[[players2$position]]$ability_upgrades)))
-                        }
-
-                        ## PRIVATE ID's
-                        # if (players2$account_id %in% c(4294967295)) {
-                        # next
-                        # } else {
-                        # Update account_id with the new informations about the player
-                        m2$update(
-                               query = paste0('{"_id":', players2$account_id, '}'),
-                               update =  toJSON(players3, auto_unbox = TRUE),
-                               upsert = TRUE
-                           )
-                        # }
-                        # }
-
-                        N <- N - 1
+                    if (class(content2) == "try-error") {
                         i <- i + 1
+                        next
+                    }
+
+                    # while (content2$response[["status_code"]] !=  200) {
+                    #     content2 <- try(
+                    #         R.utils::withTimeout(
+                    #                      get_match_details(match_id = info2[i]),
+                    #                      timeout = 5,
+                    #                      onTimeout = "silent"
+                    #                  ),
+                    #         silent = TRUE
+                    #     )
+                    #
+                    #     if (class(content2) == "try-error") {
+                    #         content2 <- NULL
+                    #         break
+                    #     }
+                    #
+                    #     if (content2$response[["status_code"]] %in% c(429, 500, 503)) Sys.sleep(60)
+                    #     if (!(content2$response[["status_code"]] %in%  c(1, 200, 429, 500, 503))) {
+                    #         content2 <- NULL
+                    #         break
+                    #     }
+                    # }
+
+                    # the match needs to be longer than 900 seconds.
+                    if (!is.null(content2) &
+                        !("error" %in% names(content2$content))) {
+                        if (content2$content$duration >= 900 &
+                            length(content2$content$players) == 10) {
+
+                            # ------------------------------------------------------
+                            # Update collect player with all players of this match
+                            # ------------------------------------------------------
+
+                            # for (A in 1:10) {
+                            players2 <- content2$content$players
+                            players2 <- lapply(players2, function(x) {
+                                if ("ability_upgrades" %in% names(x)) {
+                                    players2_au <<- x$ability_upgrades
+                                    cbind.data.frame(x[-which(names(x) == "ability_upgrades")])
+                                } else {
+                                    players2_au <<- NULL
+                                    cbind.data.frame(x)
+                                }
+                            }) %>%
+                                bind_rows() %>%
+                                mutate(position = 1:10)
+
+                            players2 <- players2 %>%
+                                filter(account_id == players$account_id[w]) %>%
+                                # filter(account_id == players2$account_id[A] & position == A) %>%
+                                mutate(
+                                    duration = content2$content$duration,
+                                    radiant_win = content2$content$radiant_win,
+                                    start_time = content2$content$start_time,
+                                    match_seq_num = content2$content$match_seq_num,
+                                    match_id = content2$content$match_id
+                                )
+
+                            if (is.null(players2_au)) {
+                                players3 <- list("$addToSet" = list(details = as.list(players2)))
+                            } else {
+                                players3 <- list("$addToSet" =
+                                                     list(details = append(as.list(players2),
+                                                                           content2$content$players[[players2$position]]$ability_upgrades)))
+                            }
+
+                            ## PRIVATE ID's
+                            # if (players2$account_id %in% c(4294967295)) {
+                            # next
+                            # } else {
+                            # Update account_id with the new informations about the player
+                            m2$update(
+                                   query = paste0('{"_id":', players2$account_id, '}'),
+                                   update =  toJSON(players3, auto_unbox = TRUE),
+                                   upsert = TRUE
+                               )
+                            # }
+                            # }
+
+                            N <- N - 1
+                            i <- i + 1
+                        } else {
+                            ## Next match of the player
+                            i <- i + 1
+                        }
                     } else {
                         ## Next match of the player
                         i <- i + 1
                     }
-                } else {
-                    ## Next match of the player
-                    i <- i + 1
                 }
+                ## Next player
+                w <- w + 1
+            } else {
+                ## Next player
+                w <- w + 1
             }
-            ## Next player
-            w <- w + 1
-        } else {
-            ## Next player
-            w <- w + 1
         }
+    } else {
+        badid <- c(badid, id[1])
+        if (is.numeric(badid)) {
+            saveRDS(badid, paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+        }
+        id <- id[-1]
+        next
     }
 
     # Add match in database
