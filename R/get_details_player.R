@@ -10,34 +10,34 @@ library(lubridate)
 library(dplyr)
 library(tcltk2)
 
-# 1: keyapi 2: match_id
-args <- commandArgs(TRUE)
-# args <- c(readRDS("~/DotA2/data/keyapi.RData")[2], "J2.RData")
-
-# register key
-key_actions(action = "register_key", value = args[1])
-
 # ------------------------------------------------------------------------------
 # MongoDB
 # ------------------------------------------------------------------------------
 m <- mongo(collection = "match", db = "dota2")   # Match
 m2 <- mongo(collection = "player", db = "dota2") # Player
 
+
+# ------------------------------------------------------------------------------
+# Init configs
+# ------------------------------------------------------------------------------
+# 1: number to a keyapi in DotA2/data/keyapi.RData
+# 2: .RData with a list of match_id & account_id
+args <- commandArgs(TRUE)
+
+# register key
+key_actions(action = "register_key",
+            value = readRDS("~/DotA2/data/keyapi.RData")[as.integer(args[1])])
+
 setwd("~/DotA2/data/id/")
 
-# IDs to collect
-ids <- readRDS(args[2])
-
-#! Limpa listas nulas
-index <- which(sapply(ids, nrow) == 0)
+ids <- readRDS(args[2])                #! IDs
+index <- which(sapply(ids, nrow) == 0) #! Del null lists
 ids <- ids[-index]
-N <- length(ids)
+N <- length(ids)                       #! length to tcltk
 
 ids_collected <- m$find(query = '{"_pi": 1}',
-                        fields = '{"_id": true}')$`_id`
-
+                        fields = '{"_id": true}')$`_id` #! from mongo match
 index2 <- sapply(ids, function(x) unique(x$match_id)) %in% ids_collected
-
 if (length(which(index2)) > 0) {
     i <- max(which(index2)) + 1 ## i
 } else {
