@@ -16,3 +16,4 @@ language:
     remark: 'Remark. '
 ui:
   chapter_name: " "
+  chapter: " "

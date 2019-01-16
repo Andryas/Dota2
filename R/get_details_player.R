@@ -12,7 +12,7 @@ library(tcltk2)
 
 # 1: keyapi 2: match_id
 args <- commandArgs(TRUE)
-# args <- c(readRDS("~/DotA2/data/keyapi.RData")[7], "J7.RData")
+# args <- c(readRDS("~/DotA2/data/keyapi.RData")[2], "J2.RData")
 
 # register key
 key_actions(action = "register_key", value = args[1])

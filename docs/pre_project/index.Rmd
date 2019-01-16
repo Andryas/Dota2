@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "Trabalho de conclusão de curso"
 author: ""
 date: "`r Sys.Date()`"
 output: bookdown::gitbook
@@ -7,22 +7,26 @@ documentclass: book
 bibliography: [book.bib, packages.bib]
 biblio-style: apalike
 link-citations: yes
-github-repo: rstudio/bookdown-demo
-description: "This is a minimal example of using the bookdown package to write a book. The output format for this example is bookdown::gitbook."
+fig_caption: yes
+description: ""
 ---
 
-```{r eval=FALSE}
+```{r config_knitr, echo = FALSE}
 knitr::opts_chunk$set(
                       warning = FALSE,
                       echo = FALSE,
                       message = FALSE,
                       cache = TRUE
                   )
+# options(knitr.graphics.auto_pdf = TRUE)
 ```
 
-```{r include=FALSE}
-# automatically create a bib database for R packages
+```{r ref_pkg, echo = FALSE}
 knitr::write_bib(c(
            .packages(), 'bookdown', 'knitr', 'rmarkdown'
        ), 'packages.bib')
+```
+
+```{r libs}
+library(knitr)
 ```
