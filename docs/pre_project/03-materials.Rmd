@@ -1,13 +1,19 @@
 # Materiais
 
-Os dados foram coletados atráves de uma
-[API](https://en.wikipedia.org/wiki/Application_programming_interface)
+Os dados foram coletados atráves de uma [API](https://en.wikipedia.org/wiki/Application_programming_interface)
 (*Application Programming Interface*) que os desenvolvedores da plataforma de jogos
-([Steam](https://steamcommunity.com/)) disponibilizam aos usúarios para que estes
-possam coletar dados de partidas históricas. Para se ter acesso
-a este serviço é necessário que o usúario tenha comprado pelo menos 1 jogo
-qualquer da plataforma, assim terá o direito a uma chave que permitirá o acesso
-a API.
+([Steam](https://steamcommunity.com/)) disponibilizam aos usúarios para que possam coletar dados de partidas
+históricas. No entando, para se ter acesso a esse serviço é necessário que o usúario tenha comprado pelo menos
+um jogo da plataforma, que lhe permite o acesso a API atráves de uma chave que é disponibilizada após a compra.
+
+Uma das principais dificuldades para o trabalho final é o processamento dos dados, pois cada chave da API tem uma
+quantidade limitada de requisições em um curto espaço de tempo e para o objetivo do trabalho é necessário coletar além
+do desfecho da partida as informações passadas de cada jogador.
+
+
+Cada chave da API tem uma
+quantidade limitada de requisições que podem ser feitas em um curto espaço de tempo
+
 
 Para coletar os dados criou-se programas utilizando o software R.
 

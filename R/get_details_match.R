@@ -18,7 +18,8 @@ args <- commandArgs(TRUE)
 #           "id-2019-01-04-.RData")
 
 # register key
-key_actions(action = "register_key", value = args[1])
+key_actions(action = "register_key",
+            value = readRDS("~/DotA2/data/keyapi.RData")[as.integer(args[1])])
 
 setwd("~/DotA2/data/id")
 
