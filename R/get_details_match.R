@@ -14,8 +14,7 @@ library(jsonlite)
 # 1: keyapi & 2: .RData of ID's is required
 args <- commandArgs(TRUE)
 
-# args <- c(readRDS("~/DotA2/data/keyapi.RData")[1],
-#           "id-2019-01-04-.RData")
+# args <- c(1, "id-2019-01-16-.RData")
 
 # register key
 key_actions(action = "register_key",
@@ -46,8 +45,16 @@ if (length(
 }
 
 # Storaged IDs in MongoDB
-si <- m$find(fields = '{"_id": true}')[[1]]
-id <- id[!(id %in% si)]
+if (length(
+    list.files(
+        pattern = paste0(gsub(".RData|.+/", "", args[2]), "storedid"))) >= 1) {
+    storedid <- readRDS(paste0(gsub(".RData|.+/", "", args[2]), "storedid.RData"))
+} else {
+    storedid <- c()
+}
+
+# si <- m$find(fields = '{"_id": true}')[[1]]
+id <- id[!(id %in% storedid)]
 
 # Remove bad IDs
 if (nrow(badid) > 0) {
@@ -128,16 +135,19 @@ while (length(id) > 0) {
         next
     }
 
-    # ## All account_id public
-    # account_id <- sapply(content$content$players, function(x) x$account_id)
-    # if (sum(account_id %in% c(4294967295)) > 1) {
-    #     badid <- rbind(badid, data.frame(match_id = id[1],
-    #                                      type = "players"))
-    #     saveRDS(badid, paste0(gsub(".RData", "", args[2]),
-    #                           "bad_id.RData"))
-    #     id <- id[-1]
-    #     next
-    # }
+    ## All account_id public
+    account_id <- sapply(content$content$players, function(x) x$account_id)
+    account_id <- account_id[!(account_id %in% c(4294967295))]
+    if (length(unique(account_id)) < 8) {
+        badid <- rbind(badid,
+                       data.frame(match_id = id[1],
+                                  type = paste0("players",
+                                                length(unique(account_id)))))
+        saveRDS(badid, paste0(gsub(".RData", "", args[2]),
+                              "bad_id.RData"))
+        id <- id[-1]
+        next
+    }
 
     ## If the match lasted less than 900 seconds DELETE
     if (content$content$duration <= 900) {
@@ -149,6 +159,8 @@ while (length(id) > 0) {
         next
     }
 
+    content$content$players_available <- length(unique(account_id))
+
 
     # Add match in database
     # _pi: player information: 0 FALSE 1 TRUE
@@ -156,7 +168,11 @@ while (length(id) > 0) {
           list("_id" = content$content$match_id,
                "_pi" = 0), content$content
       ), auto_unbox = TRUE),
-      stop_on_error = TRUE)
+      stop_on_error = FALSE)
+
+    storedid <- c(storedid, id[1])
+    saveRDS(storedid,
+            paste0(gsub(".RData|.+/", "", args[2]), "storedid.RData"))
 
     id <- id[-1]
 }

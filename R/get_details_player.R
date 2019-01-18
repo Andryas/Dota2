@@ -31,8 +31,6 @@ key_actions(action = "register_key",
 setwd("~/DotA2/data/id/")
 
 ids <- readRDS(args[2])                #! IDs
-index <- which(sapply(ids, nrow) == 0) #! Del null lists
-ids <- ids[-index]
 N <- length(ids)                       #! length to tcltk
 
 ids_collected <- m$find(query = '{"_pi": 1}',
@@ -75,19 +73,34 @@ for (i in i:N) {
     for (j in 1:nrow(p)) {
 
         #! Historico anterior do jogador anterior a partida coletada
-        history <-  try(
-            R.utils::withTimeout(
-                         get_match_history(account_id = p$account_id[j],
-                                           start_at_match_id = p$match_id[j]),
-                         timeout = 10,
-                         onTimeout = "silent"
-                     ),
-            silent = TRUE
+        history <-  try({
+            list(
+                R.utils::withTimeout(
+                             get_match_history(account_id = p$account_id[j],
+                                               start_at_match_id =
+                                                   p$match_id[j],
+                                               matches_requested = 15),
+                             timeout = 10,
+                             onTimeout = "silent"
+                         ),
+                R.utils::withTimeout(
+                             get_match_history(account_id = p$account_id[j],
+                                               start_at_match_id =
+                                                   p$match_id[j],
+                                               matches_requested = 15,
+                                               hero_id = p$hero_id[j]),
+                             timeout = 10,
+                             onTimeout = "silent"
+                         )
+            )
+        }, silent = TRUE
         )
 
-        player_match_id <- sapply(history$content$matches, function(x) {
-            x$match_id
-        })
+        player_match_id <- mapply(nf = history[[1]]$content$matches,
+                                  f = history[[2]]$content$matches, function(nf, f) {
+                                      c(nf$match_id, f$match_id)
+                                  }, SIMPLIFY = FALSE)
+        player_match_id <- unique(unlist(player_match_id))
 
         #! Informação armazenada do jogador no MongoDB
         player_db <-  m2$find(
@@ -193,8 +206,11 @@ for (i in i:N) {
                 next
             }
 
+
+            player <- content$content$players
+
             ## If the match lasted less than 900 seconds DELETE
-            if (content$content$duration <= 900) {
+            if (content$content$duration <= 900 | length(player) != 10) {
                 m2$update(
                        query = paste0('{"_id":', p$account_id[j], '}'),
                        update =  toJSON(
@@ -207,7 +223,7 @@ for (i in i:N) {
                 next
             }
 
-            player <- content$content$players
+
             player <- lapply(player, function(x) {
                 if ("ability_upgrades" %in% names(x)) {
                     players_au <<- x$ability_upgrades

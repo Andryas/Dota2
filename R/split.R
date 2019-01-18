@@ -27,14 +27,14 @@ ids <- mapply(m = id$`_id`,
               function(m, p, s) {
                   data.frame(match_id = m,
                              account_id = p$account_id,
+                             hero_id = p$hero_id,
                              start_time = s,
                              stringsAsFactors = FALSE
                              )
               }, SIMPLIFY = FALSE)
 
 ids <- lapply(ids, function(x) {
-    index <- which(x$account_id == 4294967295)
-    x[-index, ]
+    x[!(x$account_id %in% c(4294967295)), ]
 })
 
 ids <- split(ids, ceiling(seq_along(ids) / ceiling(length(ids)/5)))
