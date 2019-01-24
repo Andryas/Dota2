@@ -17,8 +17,10 @@ if (!any(grepl("start_time_-1", m$index()$name))) {
 }
 
 id <- m$find(query = '{"_pi": 0}',
-             fields = '{"_id": true,  "players": true,  "start_time": true}',
-             sort = '{"start_time": -1}', limit = 50000
+             fields = paste0('{"_id": true,  "players": true, ',
+                             '"start_time": true, "players_available": true}'),
+             sort = '{"start_time": -1, "players_available": -1}',
+             limit = 75000
              )
 
 ids <- mapply(m = id$`_id`,

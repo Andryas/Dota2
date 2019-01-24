@@ -1,5 +1,12 @@
 #!/usr/bin/env Rscript
 
+# # temp -------------------------------------------------------------------------
+# cmd <- readRDS("~/DotA2/data/cmd.RData")
+# system(eval(parse(text = cmd[[1]])))
+# system(eval(parse(text = cmd[[2]])))
+# # ------------------------------------------------------------------------------
+
+
 # ------------------------------------------------------------------------------
 # Libraries
 # ------------------------------------------------------------------------------
@@ -11,7 +18,7 @@ library(jsonlite)
 # ------------------------------------------------------------------------------
 # Configs
 # ------------------------------------------------------------------------------
-# 1: keyapi & 2: .RData of ID's is required
+# 1: keyapi
 args <- commandArgs(TRUE)
 
 # args <- c(1, "id-2019-01-16-.RData")
@@ -21,8 +28,15 @@ key_actions(action = "register_key",
             value = readRDS("~/DotA2/data/keyapi.RData")[as.integer(args[1])])
 
 setwd("~/DotA2/data/id")
+file <- list.files(pattern = "id-[0-9]{4}-[0-9]{2}-[0-9]{2}-.RData")
 
-id <- readRDS(args[2])
+# file <- list.files(pattern = "id-pro-[0-9]{4}-[0-9]{2}-[0-9]{2}-.RData")
+# file <- lapply(file, readRDS)
+# id <- unique(unlist(file))
+# file <- "id-pro-2019-01-01--2019-01-18.RData"
+
+if (length(file) == 0) break else file  <- file[1]
+id <- readRDS(file)
 id <- unlist(id)
 N <- length(id)
 
@@ -38,8 +52,8 @@ m <- mongo(collection = "match", db = "dota2")   # Match
 # lobby_type not in (0, 2, 5, 7) & game_mode not in (0, 1, 2, 14, 22)
 if (length(
     list.files(
-        pattern = paste0(gsub(".RData|.+/", "", args[2]), "bad_id"))) >= 1) {
-    badid <- readRDS(paste0(gsub(".RData|.+/", "", args[2]), "bad_id.RData"))
+        pattern = paste0(gsub(".RData|.+/", "", file), "bad_id"))) >= 1) {
+    badid <- readRDS(paste0(gsub(".RData|.+/", "", file), "bad_id.RData"))
 } else {
     badid <- data.frame(stringsAsFactors = FALSE)
 }
@@ -47,8 +61,8 @@ if (length(
 # Storaged IDs in MongoDB
 if (length(
     list.files(
-        pattern = paste0(gsub(".RData|.+/", "", args[2]), "storedid"))) >= 1) {
-    storedid <- readRDS(paste0(gsub(".RData|.+/", "", args[2]), "storedid.RData"))
+        pattern = paste0(gsub(".RData|.+/", "", file), "storedid"))) >= 1) {
+    storedid <- readRDS(paste0(gsub(".RData|.+/", "", file), "storedid.RData"))
 } else {
     storedid <- c()
 }
@@ -66,12 +80,13 @@ if (nrow(badid) > 0) {
 # ------------------------------------------------------------------------------
 
 # tcltk
-pb <- tkProgressBar(title = args[2], min = 0, max = N, width = 300)
+pb <- tkProgressBar(title = file, min = 0, max = N, width = 300)
 
 while (length(id) > 0) {
     # cat(paste0(N - length(id), "/", N), sep = "\n")
     setTkProgressBar(pb, N - length(id),
                      label = paste0(round((N - length(id))/N * 100, 3), " %"))
+
     content <-  try(
         R.utils::withTimeout(
                      get_match_details(match_id = id[1]),
@@ -84,7 +99,7 @@ while (length(id) > 0) {
     if ("content" %in% names(content)) {
         if ("error" %in% names(content[["content"]])) {
             badid <- rbind(badid, data.frame(match_id = id[1], type = "error"))
-            saveRDS(badid, paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+            saveRDS(badid, paste0(gsub(".RData", "", file), "bad_id.RData"))
             id <- id[-1]
             next
         }
@@ -104,8 +119,8 @@ while (length(id) > 0) {
     if (content$response[["status_code"]] %in% c(401, 403)) {
         cat(paste0("Access is denied. Retrying will not help.",
                    "Please verify your key= parameter.\n\n", args[1]),
-            file = paste0("log", args[2], ".log"))
-        # file.remove(args[2])
+            file = paste0("log", file, ".log"))
+        # file.remove(file)
         stop(paste0("Access is denied. Retrying will not help.",
                     "Please verify your key= parameter."))
     }
@@ -118,7 +133,7 @@ while (length(id) > 0) {
     if (content$response[["status_code"]] %in% c(400, 404)) {
         badid <- rbind(badid, data.frame(match_id = id[1],
                                          type = "bad_request"))
-        saveRDS(badid, paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+        saveRDS(badid, paste0(gsub(".RData", "", file), "bad_id.RData"))
         id <- id[-1]
         next
     }
@@ -129,7 +144,7 @@ while (length(id) > 0) {
         !(content$content$game_mode %in%  c(0, 1, 2, 14, 22))) {
         badid <- rbind(badid,
                        data.frame(match_id = id[1], type = "lobbygame"))
-        saveRDS(badid, paste0(gsub(".RData", "", args[2]),
+        saveRDS(badid, paste0(gsub(".RData", "", file),
                               "bad_id.RData"))
         id <- id[-1]
         next
@@ -143,7 +158,7 @@ while (length(id) > 0) {
                        data.frame(match_id = id[1],
                                   type = paste0("players",
                                                 length(unique(account_id)))))
-        saveRDS(badid, paste0(gsub(".RData", "", args[2]),
+        saveRDS(badid, paste0(gsub(".RData", "", file),
                               "bad_id.RData"))
         id <- id[-1]
         next
@@ -153,7 +168,7 @@ while (length(id) > 0) {
     if (content$content$duration <= 900) {
         badid <- rbind(badid,
                        data.frame(match_id = id[1], type = "duration"))
-        saveRDS(badid, paste0(gsub(".RData", "", args[2]),
+        saveRDS(badid, paste0(gsub(".RData", "", file),
                               "bad_id.RData"))
         id <- id[-1]
         next
@@ -172,10 +187,10 @@ while (length(id) > 0) {
 
     storedid <- c(storedid, id[1])
     saveRDS(storedid,
-            paste0(gsub(".RData|.+/", "", args[2]), "storedid.RData"))
+            paste0(gsub(".RData|.+/", "", file), "storedid.RData"))
 
     id <- id[-1]
 }
 close(pb)
-file.remove(args[2])
-# file.remove(paste0(gsub(".RData", "", args[2]), "bad_id.RData"))
+file.remove(file)
+# file.remove(paste0(gsub(".RData", "", file), "bad_id.RData"))
