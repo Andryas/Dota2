@@ -14,6 +14,7 @@ bookdown::pdf_book:
     in_header: preamble.tex
     # before_body: before_body.tex
   latex_engine: xelatex
+  pandoc_args: --top-level-division=chapter
   citation_package: natbib
   toc_appendix: yes
   keep_tex: yes

@@ -60,7 +60,6 @@ for (i in 1:length(skip)) {
     df <- m$find(query = paste0('{"match_id": {"$in":  [',
                                 paste0(matchid[skip[i]:skip2[i]],
                                        collapse = ","), ']}}',
-                                # '"game_mode": 22, "lobby_type": 7}',
                                 collapse = "")) %>%
         as_tibble()
 

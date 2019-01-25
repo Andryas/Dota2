@@ -3,39 +3,22 @@
 
 
 
-Os jogos estão presentes na vida das pessoas a muitos séculos, um tipo de jogo
-de azar antigo que se conhece foi uma espécie de jogo de dados com o chamado
-astrágalo. [Desafio aos Deuses pg 12].
+o que é eSports?   1p
 
+informações economica sobre o impacto dos jogos eletronicos atualmente 2p
 
-Dos astrágalos da Grécia antiga aos videogames e jogos de computador.
-Joga-se por diversão, por lazer e pelas substâncias de recompensa em se ganhar
-uma aposta.
+o surgimento das plataformas de aposta 1 ou 2p
 
+dota2 2 a 3p
 
-o fazem ao desenvolvimento tecnologico, social e economico. Os números não
-mentem. A capacidade computacional teve um grande ganho com a vinda das famosas
-placas de videos, o qual tinha por objetivo fomentar a industria de jogos que
-estava crescendo rapidamente em meados de 2005. Contudo, teve-se a brilhante
-ideia de não utiliza-la tão somente para o processamento de imagens e aumento de
-fdps. Mas também ao processamento de dados!
+o cenario 1p
 
-Com a chegada dos smartphones juntamente com seu custo reduzido, todos pudemos
-adquirir um e nos conectarmos a matrix. Quando conectados, pudemos compartilhar
-alimentos em nossas fazendas virtuais felizes e até mesmo roubar algumas
-fazendas virtuais felizes. Pudemos muito mais do que isso, interagir com outras
-pessoas e construir grupos de amizades, ou até mesmo "guides" para enviar tropas
-e materiais primas para nossos companheiros em guerra.
+proposito do trabalho 1p
 
 
 
-Jogos são objetos de entreterimento e diversão que em um primeiro momento
-parecem inofensivos e legais, porém a mais neles do que pode-se observar ao
-olhar descuidado de uma primeira observação. Jogos são sinonimo de estatística,
-mas uma estatística muita mais complexa e natural, onde atráves de mecanismos
-evolutivos é exercida com uma certa precisão. Não é atoa que o começo a
-formalização da estatística tenha suas primeiras teorias em volta de jogos,
-Cardano deixa claro seus interesses quando começa a escrever as primeiras linhas
-sobre probabilidade e diz que seu interesse era criar uma teoria para jogos que
-consequentemente foi a base para a estatpistica que viria a ser desenvolvida no
-seculo seguinte.
+Este trabalho tem como inovação a adição de novas
+covariáveis relacionadas a habilidade do jogador. A principal dificuldade está
+na obtenção dados, pois além de coletar as informações da partida que será
+utilizada para a modelagem, também deverá ser coleta **n** partidas anteriores
+de cada jogador presente nessa partida.

@@ -1,10 +1,20 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{amsthm}
-\makeatletter
-\def\thm@space@setup{%
-  \thm@preskip=8pt plus 2pt minus 4pt
-  \thm@postskip=\thm@preskip
-}
-\makeatother
-\floatplacement{figure}{h}
+\usepackage[utf8]{inputenc}
+\usepackage[brazil]{babel}
+% \floatplacement{figure}{h}
+
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{ string=[s]{"}{"},
+         stringstyle=\color{blue},
+         comment=[l]{:},
+         commentstyle=\color{black},
+         xleftmargin=.2\textwidth}
+\usepackage{adjustbox}
+
+
+\usepackage{pdflscape}			% para ambiente landscape
+\usepackage{pgfgantt}	                % cronograma
+\usepackage{color}

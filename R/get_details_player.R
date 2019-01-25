@@ -1,8 +1,6 @@
 #!/usr/bin/env Rscript
 
-# ------------------------------------------------------------------------------
 # Libraries
-# ------------------------------------------------------------------------------
 library(RDota2)
 library(mongolite)
 library(jsonlite)
@@ -10,16 +8,12 @@ library(lubridate)
 library(dplyr)
 library(tcltk2)
 
-# ------------------------------------------------------------------------------
 # MongoDB
-# ------------------------------------------------------------------------------
-m <- mongo(collection = "match", db = "dota2")   # Match
-m2 <- mongo(collection = "player", db = "dota2") # Player
+m <- mongo(collection = "match", db = "dota")   # Match
+m2 <- mongo(collection = "player", db = "dota") # Player
 
 
-# ------------------------------------------------------------------------------
 # Init configs
-# ------------------------------------------------------------------------------
 # 1: number to a keyapi in DotA2/data/keyapi.RData
 # 2: .RData with a list of match_id & account_id
 args <- commandArgs(TRUE)
@@ -35,7 +29,9 @@ N <- length(ids)                       #! length to tcltk
 
 ids_collected <- m$find(query = '{"_pi": 1}',
                         fields = '{"_id": true}')$`_id` #! from mongo match
+
 index2 <- sapply(ids, function(x) unique(x$match_id)) %in% ids_collected
+
 if (length(which(index2)) > 0) {
     i <- max(which(index2)) + 1 ## i
 } else {
@@ -72,35 +68,25 @@ for (i in i:N) {
 
     for (j in 1:nrow(p)) {
 
-        #! Historico anterior do jogador anterior a partida coletada
-        history <-  try({
-            list(
-                R.utils::withTimeout(
-                             get_match_history(account_id = p$account_id[j],
-                                               start_at_match_id =
-                                                   p$match_id[j],
-                                               matches_requested = 15),
-                             timeout = 10,
-                             onTimeout = "silent"
+        #! Historico do jogador anterior a partida coletada
+        history <-  try(
+            R.utils::withTimeout(
+                         get_match_history(
+                             account_id = p$account_id[j],
+                             start_at_match_id = p$match_id[j],
+                             matches_requested = 10
                          ),
-                R.utils::withTimeout(
-                             get_match_history(account_id = p$account_id[j],
-                                               start_at_match_id =
-                                                   p$match_id[j],
-                                               matches_requested = 15,
-                                               hero_id = p$hero_id[j]),
-                             timeout = 10,
-                             onTimeout = "silent"
-                         )
-            )
-        }, silent = TRUE
+                         timeout = 10,
+                         onTimeout = "silent"
+                     ),
+            silent = TRUE
         )
 
-        player_match_id <- mapply(nf = history[[1]]$content$matches,
-                                  f = history[[2]]$content$matches, function(nf, f) {
-                                      c(nf$match_id, f$match_id)
-                                  }, SIMPLIFY = FALSE)
-        player_match_id <- unique(unlist(player_match_id))
+        if (class(history) == "try-error") stop("Fail! Restarting...")
+
+        player_match_id <- sapply(history$content$matches,
+                                  function(x) x$match_id)
+        player_match_id <- unlist(player_match_id)
 
         #! Informação armazenada do jogador no MongoDB
         player_db <-  m2$find(
@@ -152,13 +138,6 @@ for (i in i:N) {
                 silent = TRUE
             )
 
-
-            if ("content" %in% names(content)) {
-                if ("error" %in% names(content[["content"]])) {
-                    next
-                }
-            }
-
             # --------------------------------------------------------------------------
             # https://partner.steamgames.com/doc/webapi_overview/responses
             # 200: success
@@ -170,11 +149,22 @@ for (i in i:N) {
             # 500: Internet server error
             # 503: Service unvavailable
 
+            if ("content" %in% names(content)) {
+                if ("error" %in% names(content[["content"]])) {
+                    m2$update(
+                           query = paste0('{"_id":', p$account_id[j], '}'),
+                           update =  toJSON(
+                               list("$addToSet" = list(badid = content$content$match_id)),
+                               auto_unbox = TRUE
+                           ),
+                           upsert = TRUE
+                       )
+                    player_match_id <- player_match_id[-1]
+                    next
+                }
+            }
+
             if (content$response[["status_code"]] %in% c(401, 403)) {
-                cat(paste0("Access is denied. Retrying will not help.",
-                           "Please verify your key= parameter.\n\n", args[1]),
-                    file = paste0("log", args[2], ".log"))
-                # file.remove(args[2])
                 stop(paste0("Access is denied. Retrying will not help.",
                             "Please verify your key= parameter."))
             }
@@ -184,16 +174,7 @@ for (i in i:N) {
                 next
             }
 
-
             if (content$response[["status_code"]] %in% c(400, 404)) {
-                player_match_id <- player_match_id[-1]
-                next
-            }
-
-            # --------------------------------------------------------------------------
-            ## Lobby_type & game_mode rules
-            if (!(content$content$lobby_type %in% c(0, 2, 5, 7)) |
-                !(content$content$game_mode %in%  c(0, 1, 2, 14, 22))) {
                 m2$update(
                        query = paste0('{"_id":', p$account_id[j], '}'),
                        update =  toJSON(
@@ -206,8 +187,20 @@ for (i in i:N) {
                 next
             }
 
-
-            player <- content$content$players
+            ## Lobby_type & game_mode rules
+            # !(content$content$lobby_type %in% c(0, 2, 5, 7))
+            # if (!(content$content$game_mode %in%  c(1, 22))) {
+            #     m2$update(
+            #            query = paste0('{"_id":', p$account_id[j], '}'),
+            #            update =  toJSON(
+            #                list("$addToSet" = list(badid = content$content$match_id)),
+            #                auto_unbox = TRUE
+            #            ),
+            #            upsert = TRUE
+            #        )
+            #     player_match_id <- player_match_id[-1]
+            #     next
+            # }
 
             ## If the match lasted less than 900 seconds DELETE
             if (content$content$duration <= 900 | length(player) != 10) {
@@ -223,6 +216,10 @@ for (i in i:N) {
                 next
             }
 
+            # ------------------------------------------------------------------
+            ## Processing players data
+
+            player <- content$content$players
 
             player <- lapply(player, function(x) {
                 if ("ability_upgrades" %in% names(x)) {
@@ -257,7 +254,7 @@ for (i in i:N) {
                   content$content$players[[player$position]]$ability_upgrades))))
             }
 
-            #! Add Jogador
+            #! Add Player
             m2$update(
                    query = paste0('{"_id":', p$account_id[j], '}'),
                    update =  toJSON(player, auto_unbox = TRUE),
@@ -270,10 +267,8 @@ for (i in i:N) {
     }
 
 
-    m$update(paste0('{"_id":', p$match_id[1], '}'),
-             '{"$set": {"_pi": 1}}')
+    m$update(paste0('{"_id":', p$match_id[1], '}'), '{"$set": {"_pi": 1}}')
 
     tcl("update")
 }
-
 tkdestroy(root)

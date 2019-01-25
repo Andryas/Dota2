@@ -1,26 +1,23 @@
 #!/usr/bin/env Rscript
 
-# ------------------------------------------------------------------------------
 # Libraries
-# ------------------------------------------------------------------------------
 library(mongolite)
 
-# MongoDB ----------------------------------------------------------------------
+# MongoDB
 m <- mongo(collection = "match", db = "dota2")   ## Match
-
 
 setwd("~/DotA2/data/id")
 
-if (!any(grepl("start_time_-1", m$index()$name))) {
+if (!any(grepl("players_available_-1", m$index()$name))) {
     ## Index the field start_time
-    m$index(add = '{"start_time": -1}')
+    m$index(add = '{"players_available": -1}')
 }
 
 id <- m$find(query = '{"_pi": 0}',
              fields = paste0('{"_id": true,  "players": true, ',
                              '"start_time": true, "players_available": true}'),
-             sort = '{"start_time": -1, "players_available": -1}',
-             limit = 75000
+             sort = '{"players_available": -1}',
+             limit = 5000
              )
 
 ids <- mapply(m = id$`_id`,

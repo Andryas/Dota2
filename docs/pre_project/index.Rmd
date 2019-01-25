@@ -1,14 +1,11 @@
 ---
 title: "Trabalho de conclusão de curso"
-author: ""
+author: "Andryas Waurzenczak"
 date: "`r Sys.Date()`"
-output: bookdown::gitbook
-documentclass: book
+documentclass: abntex2
+fontsize: 12pt
+classoption: oneside, a4paper
 bibliography: [book.bib, packages.bib]
-biblio-style: apalike
-link-citations: yes
-fig_caption: yes
-description: ""
 ---
 
 ```{r config_knitr, echo = FALSE}
