@@ -6,11 +6,11 @@ library(mongolite)
 library(jsonlite)
 library(lubridate)
 library(dplyr)
-library(tcltk2)
+# library(tcltk2)
 
 # MongoDB
-m <- mongo(collection = "match", db = "dota")   # Match
-m2 <- mongo(collection = "player", db = "dota") # Player
+m <- mongo(collection = "match", db = "dota2")   # Match
+m2 <- mongo(collection = "player", db = "dota2") # Player
 
 
 # Init configs
@@ -41,24 +41,24 @@ if (length(which(index2)) > 0) {
 # ------------------------------------------------------------------------------
 # Collect Details Player
 # ------------------------------------------------------------------------------
-root <- tktoplevel()
-tktitle(root) <- args[2]
-
-l1 <- tk2label(root, args[2])
-pb1 <- tk2progress(root, length = 300)
-tkconfigure(pb1, value=0, maximum = length(ids))
-
-l2 <- tk2label(root, "Collecting Player's Details")
-pb2 <- tk2progress(root, length = 300)
-
-tkpack(l1)
-tkpack(pb1)
-tkpack(l2)
-tkpack(pb2)
+# root <- tktoplevel()
+# tktitle(root) <- args[2]
+#
+# l1 <- tk2label(root, args[2])
+# pb1 <- tk2progress(root, length = 300)
+# tkconfigure(pb1, value=0, maximum = length(ids))
+#
+# l2 <- tk2label(root, "Collecting Player's Details")
+# pb2 <- tk2progress(root, length = 300)
+#
+# tkpack(l1)
+# tkpack(pb1)
+# tkpack(l2)
+# tkpack(pb2)
 
 for (i in i:N) {
-    tkconfigure(l1, text = paste0(i, "/", N))
-    tkconfigure(pb1, value = i)
+    # tkconfigure(l1, text = paste0(i, "/", N))
+    # tkconfigure(pb1, value = i)
 
     p <- ids[[i]]
 
@@ -73,8 +73,7 @@ for (i in i:N) {
             R.utils::withTimeout(
                          get_match_history(
                              account_id = p$account_id[j],
-                             start_at_match_id = p$match_id[j],
-                             matches_requested = 10
+                             start_at_match_id = p$match_id[j]
                          ),
                          timeout = 10,
                          onTimeout = "silent"
@@ -82,7 +81,7 @@ for (i in i:N) {
             silent = TRUE
         )
 
-        if (class(history) == "try-error") stop("Fail! Restarting...")
+        if (class(history) == "try-error") stop("Fail! Restarting... try-error")
 
         player_match_id <- sapply(history$content$matches,
                                   function(x) x$match_id)
@@ -114,20 +113,20 @@ for (i in i:N) {
 
         ## Se não houver partidas historicas do jogador j
         if (length(player_match_id) == 0) {
-            tkconfigure(pb2, value=0, maximum = 10)
-            tkconfigure(l2, text = paste0("Jogador ", j, " de ", nrow(p)))
-            tkconfigure(pb2, value = 10)
+            # tkconfigure(pb2, value=0, maximum = 10)
+            # tkconfigure(l2, text = paste0("Jogador ", j, " de ", nrow(p)))
+            # tkconfigure(pb2, value = 10)
             next
         }
 
-        tkconfigure(pb2, value=0, maximum = length(player_match_id))
+        # tkconfigure(pb2, value=0, maximum = 10)
 
         #! Coleta partidas anteriores do jogador j
         w <- 0
-        while (length(player_match_id) > 0) {
+        while (length(player_match_id) > 0 & w <= 10) {
             w <- w + 1
-            tkconfigure(l2, text = paste0("Jogador ", j, " de ", nrow(p)))
-            tkconfigure(pb2, value = w)
+            # tkconfigure(l2, text = paste0("Jogador ", j, " de ", nrow(p)))
+            # tkconfigure(pb2, value = w)
 
             content <-  try(
                 R.utils::withTimeout(
@@ -202,6 +201,8 @@ for (i in i:N) {
             #     next
             # }
 
+            player <- content$content$players
+
             ## If the match lasted less than 900 seconds DELETE
             if (content$content$duration <= 900 | length(player) != 10) {
                 m2$update(
@@ -218,8 +219,6 @@ for (i in i:N) {
 
             # ------------------------------------------------------------------
             ## Processing players data
-
-            player <- content$content$players
 
             player <- lapply(player, function(x) {
                 if ("ability_upgrades" %in% names(x)) {
@@ -262,13 +261,14 @@ for (i in i:N) {
                )
 
             player_match_id <- player_match_id[-1]
-            tcl("update")
+            # tcl("update")
         }
     }
 
 
     m$update(paste0('{"_id":', p$match_id[1], '}'), '{"$set": {"_pi": 1}}')
 
-    tcl("update")
+    # tcl("update")
 }
-tkdestroy(root)
+file.remove(args[2])
+# tkdestroy(root)

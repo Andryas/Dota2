@@ -29,10 +29,10 @@ if (!(args[1] %in% c("match", "player"))) {
 if (args[1] == "match") {
     envp <- new.env()
 
-    files <- list.files(pattern = "id-[0-9]{4}-[0-9]{2}-[0-9]{2}-.RData")
+    files <- list.files(pattern = "id-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]+.RData")
     files <- files[1:length(eval(parse(text = args[2])))]
 
-    for (i in eval(parse(text = args[2]))) {
+    for (i in 1:length(files)) {
         assign(paste0("p", i), process$new(match_script, c(i, files[i])),
                envir = envp)
         Sys.sleep(4)
@@ -70,14 +70,12 @@ if (args[1] == "match") {
             files <- files[-rmvP]
         }
 
-
-        if (today < Sys.Date()) {
-            file.remove(list.files())
-            break
-        }
+        if (Sys.Date() > today) stop("Another Day")
 
         Sys.sleep(60)
     }
+
+    file.remove(list.files(pattern = paste0(gsub("id-|.RData", "", files), collapse = "|")))
 }
 
 # ------------------------------------------------------------------------------
@@ -88,10 +86,12 @@ if (args[1] == "player") {
     envp <- new.env()
 
     for (i in eval(parse(text = args[2]))) {
+
         assign(paste0("p", i),
                process$new(player_script,
                            c(i, paste0("J", i, ".RData"))),
                envir = envp)
+
         Sys.sleep(4)
     }
 
@@ -123,11 +123,10 @@ if (args[1] == "player") {
 
         if (!is.null(rmvP)) P <- P[-rmvP]
 
-        if (today < Sys.Date()) {
-            # file.remove(list.files())
-            break
-        }
+        if (today < Sys.Date()) stop("Another Day")
 
         Sys.sleep(60)
     }
+
+    file.remove(list.files(pattern = paste0(gsub("id-|.RData", "", files), collapse = "|")))
 }

@@ -2,7 +2,7 @@
 
 # Libraries
 library(RDota2)
-library(tcltk)
+# library(tcltk)
 library(mongolite)
 library(jsonlite)
 
@@ -14,15 +14,14 @@ key_actions(action = "register_key",
             value = readRDS("~/DotA2/data/keyapi.RData")[as.integer(args[1])])
 
 # MongoDB
-m <- mongo(collection = "match", db = "dota")
+m <- mongo(collection = "match", db = "dota2")
 
 setwd("~/DotA2/data/id")
-file <- list.files(pattern = "id-[0-9]{4}-[0-9]{2}-[0-9]{2}-.RData")
-if (length(file) == 0) break else file  <- file[1]
+file <- list.files(pattern = paste0("id-[0-9]{4}-[0-9]{2}-[0-9]{2}-",
+                                    args[1], ".RData"))
+# if (length(file) == 0) break else file  <- file[1]
 id <- readRDS(file)
-# id <- unlist(readRDS("id.RData"))
 N <- length(id)
-
 
 # BAD IDs
 # duration <= 900 & players != 10 & no information (BAD ID's)
@@ -48,12 +47,12 @@ id <- id[!(id %in% badid$match_id)]
 # Collect Details Match
 # ------------------------------------------------------------------------------
 
-# tcltk
-pb <- tkProgressBar(title = file, min = 0, max = N, width = 300)
+# # tcltk
+# pb <- tkProgressBar(title = file, min = 0, max = N, width = 300)
 
 while (length(id) > 0) {
-    setTkProgressBar(pb, N - length(id),
-                     label = paste0(round((N - length(id))/N * 100, 3), " %"))
+    # setTkProgressBar(pb, N - length(id),
+    #                  label = paste0(round((N - length(id))/N * 100, 3), " %"))
 
     content <-  try(
         R.utils::withTimeout(
@@ -160,5 +159,5 @@ while (length(id) > 0) {
 
     id <- id[-1]
 }
-close(pb)
+# close(pb)
 file.remove(file)

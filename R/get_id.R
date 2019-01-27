@@ -11,7 +11,7 @@ key_actions(action = "register_key",
             )
 
 if (file.exists("id.RData")) {
-    id <- readRDS("id.RData")
+    id <- unlist(readRDS("id.RData"))
 } else {
     id <- c()
 }
@@ -36,16 +36,16 @@ while (TRUE) {
 
     if (class(newid) == "try-error") next
 
-    newid <- unique(do.call(c, newid))
+    newid <- unique(unlist(do.call(c, newid)))
 
-    id <- unique(c(id, newid))
+    id <- unique(unlist(c(id, newid)))
 
     if (Sys.Date() > today_) {
-        saveRDS(id, paste0("id-", today_, ".RData"))
+        saveRDS(unlist(id), paste0("id-", today_, "-.RData"))
         today_ <- Sys.Date()
         id <- c()
     } else {
-        saveRDS(id, "id.RData")
+        saveRDS(unlist(id), "id.RData")
     }
 
     Sys.sleep(180)
