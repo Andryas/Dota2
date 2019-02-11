@@ -3,12 +3,15 @@
 # Libraries
 library(RDota2)
 
+# Args
 args <- commandArgs(TRUE)
 
 # register key
-key_actions(action = "register_key",
-            value = args[1]
-            )
+key_actions(action = "register_key", value = args[1])
+
+if (!dir.exists("~/Dota2/id")) dir.create("~/Dota2/id")
+
+setwd("~/Dota2/id")
 
 if (file.exists("id.RData")) {
     id <- unlist(readRDS("id.RData"))
@@ -21,7 +24,6 @@ heroesid <- get_heroes()$content$id
 today_ <- Sys.Date()
 
 while (TRUE) {
-
     newid <- try(
         lapply(heroesid, function(h) {
             newid <- get_match_history(min_players = 10,

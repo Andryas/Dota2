@@ -20,15 +20,14 @@ args <- commandArgs(TRUE)
 
 # register key
 key_actions(action = "register_key",
-            value = readRDS("~/DotA2/data/keyapi.RData")[as.integer(args[1])])
+            value = readRDS("~/Dota2/keyapi.RData")[as.integer(args[1])])
 
-setwd("~/DotA2/data/id/")
+setwd("~/Dota2/id/")
 
 ids <- readRDS(args[2])                #! IDs
 N <- length(ids)                       #! length to tcltk
-
-ids_collected <- m$find(query = '{"_pi": 1}',
-                        fields = '{"_id": true}')$`_id` #! from mongo match
+                                       #! from mongo match
+ids_collected <- m$find(query = '{"_pi": 1}', fields = '{"_id": true}')$`_id`
 
 index2 <- sapply(ids, function(x) unique(x$match_id)) %in% ids_collected
 
@@ -81,11 +80,33 @@ for (i in i:N) {
             silent = TRUE
         )
 
-        if (class(history) == "try-error") stop("Fail! Restarting... try-error")
+        history2 <-  try(
+            R.utils::withTimeout(
+                         get_match_history(
+                             account_id = p$account_id[j],
+                             start_at_match_id = p$match_id[j],
+                             hero_id = p$hero_id[j]
+                         ),
+                         timeout = 10,
+                         onTimeout = "silent"
+                     ),
+            silent = TRUE
+        )
+        
+
+        if (class(history) == "try-error" |
+            class(history2) ==  "try-error") stop("Fail! Restarting... try-error")
 
         player_match_id <- sapply(history$content$matches,
                                   function(x) x$match_id)
+        
+        player_match_id2 <- sapply(history2$content$matches,
+                                   function(x) x$match_id)
+        
         player_match_id <- unlist(player_match_id)
+        player_match_id2 <- unlist(player_match_id2)
+
+        player_match_id <- unique(c(player_match_id2, player_match_id))
 
         #! Informação armazenada do jogador no MongoDB
         player_db <-  m2$find(
@@ -137,7 +158,6 @@ for (i in i:N) {
                 silent = TRUE
             )
 
-            # --------------------------------------------------------------------------
             # https://partner.steamgames.com/doc/webapi_overview/responses
             # 200: success
             # 400: Bad request
@@ -187,19 +207,19 @@ for (i in i:N) {
             }
 
             ## Lobby_type & game_mode rules
-            # !(content$content$lobby_type %in% c(0, 2, 5, 7))
-            # if (!(content$content$game_mode %in%  c(1, 22))) {
-            #     m2$update(
-            #            query = paste0('{"_id":', p$account_id[j], '}'),
-            #            update =  toJSON(
-            #                list("$addToSet" = list(badid = content$content$match_id)),
-            #                auto_unbox = TRUE
-            #            ),
-            #            upsert = TRUE
-            #        )
-            #     player_match_id <- player_match_id[-1]
-            #     next
-            # }
+            if (!(content$content$lobby_type == p$lobby_type) &
+                !(content$content$game_mode ==  p$game_mode)) {
+                # m2$update(
+                #        query = paste0('{"_id":', p$account_id[j], '}'),
+                #        update =  toJSON(
+                #            list("$addToSet" = list(badid = content$content$match_id)),
+                #            auto_unbox = TRUE
+                #        ),
+                #        upsert = TRUE
+                #    )
+                player_match_id <- player_match_id[-1]
+                next
+            }
 
             player <- content$content$players
 
@@ -217,7 +237,6 @@ for (i in i:N) {
                 next
             }
 
-            # ------------------------------------------------------------------
             ## Processing players data
 
             player <- lapply(player, function(x) {

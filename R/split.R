@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
 
+# Args
 args <- commandArgs(TRUE)
 
 if (!(args[1] %in% c("match", "player"))) {
@@ -13,17 +14,18 @@ library(mongolite)
 # MongoDB
 m <- mongo(collection = "match", db = "dota2")   ## Match
 
-setwd("~/DotA2/data/id")
+setwd("~/Dota2/id")
 
 if (args[1] == "player") {
     if (!any(grepl("players_available_-1", m$index()$name))) {
         ## Index the field start_time
-        m$index(add = '{"players_available": -1"}')
+        m$index(add = '{"players_available": -1}')
     }
 
-    id <- m$find(query = '{"_pi": 0, "game_mode": {"$in": [1, 22]}}',
+    id <- m$find(query = '{"_pi": 0, "game_mode": 22}',
                  fields = paste0('{"_id": true,  "start_time": true, ',
-                                 '"players_available": true, "players": true}'),
+                                 '"players_available": true, "players": true,',
+                                 '"lobby_type": true, "game_mode": true}'),
                  sort = '{"players_available": -1}',
                  limit = 15000
                  )
@@ -31,10 +33,14 @@ if (args[1] == "player") {
     ids <- mapply(m = id$`_id`,
                   p = id$players,
                   s = id$start_time,
-                  function(m, p, s) {
+                  g = id$game_mode,
+                  l = id$lobby_type,
+                  function(m, p, s, g, l) {
                       data.frame(match_id = m,
                                  account_id = p$account_id,
                                  hero_id = p$hero_id,
+                                 game_mode = g,
+                                 lobby_type = l,
                                  start_time = s,
                                  stringsAsFactors = FALSE
                                  )
@@ -52,7 +58,7 @@ if (args[1] == "player") {
 
 if (args[1] == "match") {
     ## get_id.R file (AWS)
-    cmd <- readRDS("~/DotA2/data/cmd.RData")
+    cmd <- readRDS("~/Dota2/cmd.RData")
     system(eval(parse(text = cmd)))
 
     files <- list.files(pattern = "id-[0-9]{4}-[0-9]{2}-[0-9]{2}-.RData")

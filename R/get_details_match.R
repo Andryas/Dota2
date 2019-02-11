@@ -2,24 +2,24 @@
 
 # Libraries
 library(RDota2)
-# library(tcltk)
 library(mongolite)
 library(jsonlite)
 
 # Configs
 args <- commandArgs(TRUE)
+# args <- c(1)
 
 # register key
 key_actions(action = "register_key",
-            value = readRDS("~/DotA2/data/keyapi.RData")[as.integer(args[1])])
+            value = readRDS("~/Dota2/keyapi.RData")[as.integer(args[1])])
 
 # MongoDB
 m <- mongo(collection = "match", db = "dota2")
 
-setwd("~/DotA2/data/id")
+setwd("~/Dota2/id")
+
 file <- list.files(pattern = paste0("id-[0-9]{4}-[0-9]{2}-[0-9]{2}-",
                                     args[1], ".RData"))
-# if (length(file) == 0) break else file  <- file[1]
 id <- readRDS(file)
 N <- length(id)
 
@@ -43,11 +43,7 @@ if (length(list.files(
 id <- id[!(id %in% storedid)]
 id <- id[!(id %in% badid$match_id)]
 
-# ------------------------------------------------------------------------------
-# Collect Details Match
-# ------------------------------------------------------------------------------
-
-# # tcltk
+# Collect Details Match ---------------------------------------------------
 # pb <- tkProgressBar(title = file, min = 0, max = N, width = 300)
 
 while (length(id) > 0) {
@@ -63,7 +59,6 @@ while (length(id) > 0) {
         silent = TRUE
     )
 
-    # --------------------------------------------------------------------------
     # https://partner.steamgames.com/doc/webapi_overview/responses
     # 200: success
     # 400: Bad request
@@ -84,10 +79,6 @@ while (length(id) > 0) {
     }
 
     if (content$response[["status_code"]] %in% c(401, 403)) {
-        cat(paste0("Access is denied. Retrying will not help.",
-                   "Please verify your key= parameter.\n\n", args[1]),
-            file = paste0("log", file, ".log"))
-        # file.remove(file)
         stop(paste0("Access is denied. Retrying will not help.",
                     "Please verify your key= parameter."))
     }
@@ -103,7 +94,6 @@ while (length(id) > 0) {
         id <- id[-1]
         next
     }
-    # --------------------------------------------------------------------------
 
     ## Lobby_type & game_mode rules
     # !(content$content$lobby_type %in% c(0, 2, 5, 7))
@@ -118,6 +108,7 @@ while (length(id) > 0) {
     ## All account_id public
     account_id <- sapply(content$content$players, function(x) x$account_id)
     account_id <- account_id[!(account_id %in% c(4294967295))]
+    # At least 9 players with publick account
     if (length(unique(account_id)) < 9) {
         badid <- rbind(badid,
                        data.frame(

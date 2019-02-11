@@ -13,10 +13,10 @@ m2 <- mongo(collection = "player", db = "dota2") # Player
 # 2: seq(1:5) (keyapi and files with IDs to collect)
 args <- commandArgs(TRUE)
 
-setwd("~/DotA2/data/id/")
+setwd("~/Dota2/id/")
 
-match_script <- normalizePath("~/Documentos/gitlab/dota2/R/get_details_match.R")
-player_script <- normalizePath("~/Documentos/gitlab/dota2/R/get_details_player.R")
+match_script <- normalizePath("~/Documentos/projetos/dota2/R/get_details_match.R")
+player_script <- normalizePath("~/Documentos/projetos/dota2/R/get_details_player.R")
 
 if (!(args[1] %in% c("match", "player"))) {
     # print(eval(parse(text = args[2])))

@@ -39,4 +39,8 @@ rsconnect/
 
 tests/
 bib/
-R/amazon.R
+keyapi.RData
+dota2.pem
+ideias.Rmd
+ideias.html
+TCCdocs/
