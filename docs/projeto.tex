@@ -116,7 +116,7 @@ brazil,				% o último idioma é o principal do documento
 % ---
 % Informações de dados para CAPA e FOLHA DE ROSTO
 % ---
-\titulo{Dota2}
+\titulo{Avaliação do impacto dos jogadores em modelos preditivos no jogo Dota2}
 \vspace{2cm}
 \autor{Andryas Waurzenczak}
 \local{Curitiba}
@@ -237,49 +237,98 @@ brazil,				% o último idioma é o principal do documento
 % Introdução
 % ----------------------------------------------------------
 \chapter{Introdução}
-% \label{cha:introducao}
+\label{cha:introducao}
+
+
 
 Dos astrágalos da antiga Grécia aos jogos de console e computador do século XXI.
-Ao longo da trágetoria humana os jogos tem-se mostrado uma atividade essêncial
-para o desenvolvimento tecnológico e cientifico. Uma das primerias teorias sobre
-a lei das probabilidade, que é um dos alicerces da ciência estatística, em suas
-primeiras formulações por Girolamo Cardano, teve como motivação, segundo
-\cite{bernstein1997desafio}, o desenvolvimento de uma teoria dos jogos, e não
-uma teoria de probabilidades.
+Ao longo da trágetoria humana os jogos tem desempenhado um papel essêncial para
+o desenvolvimento da ciência e da tecnologia. Atualmente os jogos tem servido
+como verdadeiros laborátorios para o desenvolvimento de áreas como Machine
+Learning e Inteligencia Artificial, isto por que tem-se, geralmente, uma grande
+quantidade de dados disponiveis e ambientes controlados.
+\cite{silva2017moba}.
+
+Um dos jogos que tem chamado a atenção de pesquisadores e, também, de
+grandes empresários é o jogo Dota2\footnote{http://dota2.com/}. Diversos
+trabalhos relacionados ao jogo foram feitos, como por exemplo, a instituição sem
+fins lucrativos OpenAI\footnote{https://www.openai.com/}, financiada por um dos
+grandes magnatas e visionários do mundo, atualmente,  Elon
+Musk\footnote{https://en.wikipedia.org/wiki/Elon\_Musk}, que criou o primeiro programa capaz de
+``jogar o jogo'' e que teve seu poder computacional demonstrado no The International de 2017 e 2018.
+Além de vários outros trabalhos que visavam, não somente a criação de algoritmos capazes de jogar o
+jogo mas também, prever o desfecho da partida no inicio do jogo.
+
+% Um dos esportes eletrônicos que mais tem movimentado o mercado de jogos, tanto
+% Um dos jogos que mais está em alta, tanto economicamente quanto em atenção, é o jogo
+% Dota2\footnote{}. Este jogo, que é o tema do trabalho, tem
+% se destacado nos últimos anos principalmente por causa do seu evento principal,
+% que acontece uma vez ao ano, conhecido como The International e , também, por
+% ter chamado a atenção de um dos maiores empreendedores e visionários do mundo,
+% Elon Musk\footnote{https://en.wikipedia.org/wiki/Elon\_Musk}, que em outubro de
+% 2015 junto com mais alguns investidores emprenderam mais de 1 bilhão de doláres
+% em uma instituição sem fins lucrativos conhecida como
+% OpenAI\footnote{https://www.openai.com/} que em seus projetos iniciais teve como
+% foco o desenvolvimento de uma inteligencia capaz de ``jogar'' o jogo
+% Dota2\footnote{https://blog.openai.com/dota-2/}.
 
 
-Ainda no século XXI os jogos continuam a fomentar o desenvolvimento de novas
-tecnologias, hoje ouvesse muito sobre Inteligência Artificial (AI) e Máquina de
-Aprendizado (ML) que são ramificações da estatística que ganharam vida
-própria. No entanto, o progresso e o sucesso dessas áreas está ligada, de certa
-forma, aos jogos, pois se no momento em que se consegue fazer um computador
-jogar um jogo tão complexo como Dota2, por exemplo, onde deve-se tomar diversar
-decisões simultãneas instante à instante, qual seria a dificuldade de
-externelizar esse conhecimento para o mundo real? Pode-se dizer que jogos de
-computadores são verdadeiros laborátorios para o desenvolvimento e o progresso da
-ciência como um todo \cite{silva2017moba}.
+% Dota2 é um jogo eletrônico desenvolvido pela empresa
+% Valve\footnote{https://www.valvesoftware.com/pt-br/} e que pode ser baixado e
+% jogado gratuitamente pela plataforma de jogos
+% Steam\footnote{https://steamcommunity.com/}. 
 
-Não obstante, os jogos movimentam a economia, fatos sobre isso podem ser
-observados em estatísticas que revistas especializadas sobre mercados de jogos
-disponibilizam, segundo a \cite{newzoo2018global}, por exemplo, o mercado de
-jogos no ano de 2018 teve um lucro de aproximadamente de 134.9 bilhões de
-doláres, onde 63.2 bilhões para jogos de mobile, 38.3 bilhões para jogos de
-console e 33.4 bilhões para jogos de computador. E além disso abriu espaço 
-para diversos sistemas de apostas que fornecem serviços nos mais
-variados jogos eletrônicos, alguns exemplos são
-gg.bet\footnote{https://gg.bet/pt/betting},
-pinnacle\footnote{https://www.pinnacle.com/pt/}.
 
-Este trabalho tem como objetivo contribuir com a ciência dos esportes
-eletrônicos, no genêro MOBA (Multiplayer Online Battle Arena) no jogo
-DotA2\footnote{www.dota2.com}. A escolha desse jogo se deve a alguns fatores,
-primeiramente pela preferência do autor, segundo por ser o eSport mais bem pago
-de todos os tempos e por último porque Elon Musk, um dos maiores empreendedores
-e visionarios do mundo, investiu em um projeto conhecido como
-openAI\footnote{https://openai.com/} que desenvolveu algoritmos inteligentes
-capazes de jogar o jogo pela primeira vez no The International de 2017 o que
-chocou a comunidade e fez o jogo ganhar mais espaço e atrair mais cientistas das
-mais diversas áreas.
+
+% Neste evento diversas equipes profissionais se enfrentam, algumas sendo financiadas
+% por grandes empresas outras por si mesmas, que atráves de treinos intensos se
+% preparam para participar de diversos torneios e que atráves deles vão
+% conquistando torcedores e atraindo mais audiência ao jogo.
+% 
+% Para poder participar desse evento as
+% equipes devem ficar bem colocadas em torneios menores, chamados de Majors, que
+% acontecem ao redor do mundo.
+
+
+
+
+% Uma das primerias teorias sobre a lei das probabilidade, que é um dos alicerces
+% da ciência estatística, em suas primeiras formulações por Girolamo Cardano, teve
+% como motivação, segundo \cite{bernstein1997desafio}, o desenvolvimento de uma
+% teoria dos jogos, e não uma teoria de probabilidades.
+
+% Ainda no século XXI os jogos continuam a fomentar o desenvolvimento de novas
+% tecnologias, hoje ouvesse muito sobre Inteligência Artificial (AI) e Máquina de
+% Aprendizado (ML) que são ramificações da estatística que ganharam vida
+% própria. No entanto, o progresso e o sucesso dessas áreas está ligada, de certa
+% forma, aos jogos, pois se no momento em que se consegue fazer um computador
+% jogar um jogo tão complexo como Dota2, por exemplo, onde deve-se tomar diversar
+% decisões simultãneas instante à instante, qual seria a dificuldade de
+% externelizar esse conhecimento para o mundo real? Pode-se dizer que jogos de
+% computadores são verdadeiros laborátorios para o desenvolvimento e o progresso da
+% ciência como um todo \cite{silva2017moba}.
+% 
+% Não obstante, os jogos movimentam a economia, fatos sobre isso podem ser
+% observados em estatísticas que revistas especializadas sobre mercados de jogos
+% disponibilizam, segundo a \cite{newzoo2018global}, por exemplo, o mercado de
+% jogos no ano de 2018 teve um lucro de aproximadamente de 134.9 bilhões de
+% doláres, onde 63.2 bilhões para jogos de mobile, 38.3 bilhões para jogos de
+% console e 33.4 bilhões para jogos de computador. E além disso abriu espaço 
+% para diversos sistemas de apostas que fornecem serviços nos mais
+% variados jogos eletrônicos, alguns exemplos são
+% gg.bet\footnote{https://gg.bet/pt/betting},
+% pinnacle\footnote{https://www.pinnacle.com/pt/}.
+% 
+% Este trabalho tem como objetivo contribuir com a ciência dos esportes
+% eletrônicos, no genêro MOBA (Multiplayer Online Battle Arena) no jogo
+% DotA2\footnote{www.dota2.com}. A escolha desse jogo se deve a alguns fatores,
+% primeiramente pela preferência do autor, segundo por ser o eSport mais bem pago
+% de todos os tempos e por último porque Elon Musk, um dos maiores empreendedores
+% e visionarios do mundo, investiu em um projeto conhecido como
+% openAI\footnote{https://openai.com/} que desenvolveu algoritmos inteligentes
+% capazes de jogar o jogo pela primeira vez no The International de 2017 o que
+% chocou a comunidade e fez o jogo ganhar mais espaço e atrair mais cientistas das
+% mais diversas áreas.
 
 
 % ----------------------------------------------------------
@@ -613,109 +662,98 @@ ROC etc...
 % ----------------------------------------------------------
  % Cronograma
 % ----------------------------------------------------------
-%   \begin{landscape}
-% \chapter{Cronograma de Atividades}
-% \label{cha:cronograma}
-%
-% % Pretende-se cumprir o cronograma de atividades abaixo, estratificado
-% % pelas semanas dos meses que compreendem a execução do trabalho.
-% % \vspace{-0.2cm}
-% \begin{center}
-% \begin{SingleSpacing}
-% \hspace{-1.5cm}
-% % \resizebox{1\textwidth}{0.7\textheight}{
-%   \begin{tikzpicture}[thick, scale=0.94, every node/.style={scale=0.94}]
-%   \begin{ganttchart}[
-%     canvas/.append style={fill=none},
-%     y unit title=0.6cm, % Size da indicação do tempo
-%     y unit chart=0.8cm, % Size do altura das colunas
-%     x unit= 10mm, % largura das celulas
-%     vgrid={*1{black!50, dotted}}, % grid cinza vertical
-%     hgrid={*1{black!50, dotted}}, % grid cinza horizontal
-%     title height=0.8, % Size dos dias
-%     bar/.style={fill=done},
-%     bar incomplete/.append style={fill=do},
-%     bar label node/.append style={align=right},
-%     bar label font=\scriptsize\color{black!65},
-%     group label font=\bfseries\scriptsize\color{black},
-%     group left peak width=0.2,
-%     group right peak width=0.2,
-%     group left peak height=0.15,
-%     group right peak height=0.15,
-%     bar height=0.6, % size das barras de tarefas
-%     bar left shift=.2, bar right shift=-.2,
-%     bar top shift=.2, bar height=.4,
-%     link/.style={-to, line width=0.7pt, black!50},
-%     link type=dr,
-%     today=23,
-%     today offset=0.8,
-%     today label=Entrega dia 18/07,
-%     today label font=\bfseries\scriptsize,
-%     today rule/.style={draw=black, thick, dashed},
-%     progress label text ={\pgfmathprintnumber[precision=0,
-%                                               verbatim]{#1}\% realizado},
-%                                                 ]{1}{24} %
-%   \gantttitle{Fevereiro\footnote{ss}}{4}
-%   \gantttitle{Março}{4}
-%   \gantttitle{Abril}{4}
-%   \gantttitle{Maio}{4}
-%   \gantttitle{Junho}{4}
-%   \gantttitle{Julho}{4} \\
-%   \gantttitlelist{1,...,24}{1} \\
-%
-%   \ganttgroup[group label node/.append style={align=right},
-%               progress=75]{Projeto \ganttalignnewline de Pesquisa}{1}{3} \\
-%   \ganttbar[progress=100, progress label text=]{Entrega à
-%     \ganttalignnewline banca}{1}{2} \\
-%
-%   \ganttgroup[group label node/.append style={align=right},
-%               progress=20]{Elaboração \ganttalignnewline da Pesquisa}{2}{20} \\
-%   \ganttbar[progress=40]{Revisão de \ganttalignnewline
-%     literatura}{2}{8} \\
-%   \ganttbar[progress=10]{Implementação
-%     \ganttalignnewline Computacional}{7}{14} \\
-%   \ganttbar[progress=0, progress label text= ]{Análise dos
-%     \ganttalignnewline dados simulados}{11}{12} \\
-%   \ganttbar[progress=0, progress label text= ]{Análise de
-%     \ganttalignnewline dados reais}{11}{14} \\
-%   \ganttbar[progress=0, progress label text= ]{Discussão
-%     \ganttalignnewline dos resultados}{13}{16} \\
-%   \ganttbar[progress=0, progress label text= ]{Redação
-%     \ganttalignnewline da pesquisa}{15}{20} \\
-%
-%   \ganttgroup[group label node/.append style={align=right},
-%               progress=0, progress label text=]{Defesa \ganttalignnewline do
-%                 Trabalho}{20}{21} \\
-%   \ganttbar[progress=0, progress label text= ]{Elaboração da
-%     \ganttalignnewline apresentação}{20}{20} \\
-%
-%   \ganttgroup[group label node/.append style={align=right},
-%               progress=0, progress label text=]{Revisão Final}{21}{24} \\
-%   \ganttbar[progress=0, progress label text= ]{Incorporação
-%     \ganttalignnewline das sugestões}{21}{22} \\
-%   \ganttbar[progress=0, progress label text= ]{Redação da
-%     \ganttalignnewline versão final}{22}{23} \\
-%   \ganttlink{elem1}{elem2}
-%   \ganttlink{elem3}{elem4}
-%   \ganttlink{elem4}{elem5}
-%   \ganttlink{elem4}{elem6}
-%   \begin{scope}[on background layer]
-%   \ganttlink{elem5}{elem7}
-%   \end{scope}
-%   \ganttlink{elem6}{elem7}
-%   \ganttlink{elem3}{elem7}
-%   \ganttlink{elem3}{elem8}
-%   \ganttlink{elem7}{elem8}
-%   \ganttlink{elem8}{elem10}
-%   \ganttlink{elem10}{elem12}
-%   \ganttlink{elem10}{elem13}
-%   \ganttlink{elem12}{elem13}
-%   \end{ganttchart}
-%   \end{tikzpicture}
-%   \end{SingleSpacing}
-%   \end{center}
-%
-%   \end{landscape}
+\begin{landscape}
+  \chapter{Cronograma de Atividades}
+  \label{cha:cronograma}
+
+% \vspace{-0.2cm}
+\begin{center}
+\begin{SingleSpacing}
+\hspace{-1.5cm}
+% \resizebox{1\textwidth}{0.7\textheight}{
+  \begin{tikzpicture}[thick, scale=0.94, every node/.style={scale=0.94}]
+  \begin{ganttchart}[
+    canvas/.append style={fill=none},
+    y unit title=0.6cm, % Size da indicação do tempo
+    y unit chart=0.8cm, % Size do altura das colunas
+    x unit= 10mm, % largura das celulas
+    vgrid={*1{black!50, dotted}}, % grid cinza vertical
+    hgrid={*1{black!50, dotted}}, % grid cinza horizontal
+    title height=0.8, % Size dos dias
+    bar/.style={fill=done},
+    bar incomplete/.append style={fill=do},
+    bar label node/.append style={align=right},
+    bar label font=\scriptsize\color{black!65},
+    group label font=\bfseries\scriptsize\color{black},
+    group left peak width=0.2,
+    group right peak width=0.2,
+    group left peak height=0.15,
+    group right peak height=0.15,
+    bar height=0.6, % size das barras de tarefas
+    bar left shift=.2, bar right shift=-.2,
+    bar top shift=.2, bar height=.4,
+    link/.style={-to, line width=0.7pt, black!50},
+    link type=dr,
+    % today=23,
+    % today offset=0.8,
+    % today label=Entrega dia 18/07,
+    % today label font=\bfseries\scriptsize,
+    % today rule/.style={draw=black, thick, dashed},
+    progress label text ={\pgfmathprintnumber[precision=0,
+                                              verbatim]{#1}\% realizado},
+                                                ]{1}{24} %
+  \gantttitle{Fevereiro\footnote{ss}}{4}
+  \gantttitle{Março}{4}
+  \gantttitle{Abril}{4}
+  \gantttitle{Maio}{4}
+  \gantttitle{Junho}{4}
+  \gantttitle{Julho}{4} \\
+  \gantttitlelist{1,...,24}{1} \\
+
+  \ganttgroup[group label node/.append style={align=right},
+              progress=100]{Projeto \ganttalignnewline de Pesquisa}{1}{3} \\
+  \ganttbar[progress=100, progress label text=]{Entrega à
+    \ganttalignnewline banca}{3}{4} \\
+
+  % \ganttgroup[group label node/.append style={align=right},
+  %             progress=20]{Elaboração \ganttalignnewline da Pesquisa}{2}{20} \\
+  \ganttbar[progress=20]{Revisão de \ganttalignnewline
+    literatura}{2}{8} \\
+  \ganttbar[progress=50]{Implementação
+    \ganttalignnewline Computacional}{5}{12} \\
+  \ganttbar[progress=0, progress label text= ]{Análise dos
+    \ganttalignnewline dados}{7}{17} \\
+  \ganttbar[progress=0, progress label text= ]{Discussão
+    \ganttalignnewline dos resultados}{15}{17} \\
+  \ganttbar[progress=0, progress label text= ]{Redação
+    \ganttalignnewline da pesquisa}{13}{20} \\
+  \ganttbar[progress=0, progress label text= ]{Elaboração da
+    \ganttalignnewline apresentação}{19}{20} \\
+  \ganttbar[progress=0, progress label text= ]{Entrega do
+    \ganttalignnewline trabalho}{21}{22} \\
+  \ganttbar[progress=0, progress label text= ]{Apresentação}{21}{22} \\
+
+  % \ganttlink{elem1}{elem2}
+  % \ganttlink{elem3}{elem4}
+  % \ganttlink{elem4}{elem5}
+  % \ganttlink{elem4}{elem6}
+  % \begin{scope}[on background layer]
+  % \ganttlink{elem5}{elem7}
+  % \end{scope}
+  % \ganttlink{elem6}{elem7}
+  % \ganttlink{elem3}{elem7}
+  % \ganttlink{elem3}{elem8}
+  % \ganttlink{elem7}{elem8}
+  % \ganttlink{elem8}{elem10}
+  % \ganttlink{elem10}{elem12}
+  % \ganttlink{elem10}{elem13}
+  % \ganttlink{elem12}{elem13}
+  \end{ganttchart}
+  \end{tikzpicture}
+  \end{SingleSpacing}
+  \end{center}
+
+  \end{landscape}
 %   ---
 \phantompart
 

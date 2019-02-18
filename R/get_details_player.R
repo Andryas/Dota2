@@ -24,9 +24,8 @@ key_actions(action = "register_key",
 
 setwd("~/Dota2/id/")
 
-ids <- readRDS(args[2])                #! IDs
-N <- length(ids)                       #! length to tcltk
-                                       #! from mongo match
+ids <- readRDS(args[2])
+N <- length(ids)       
 ids_collected <- m$find(query = '{"_pi": 1}', fields = '{"_id": true}')$`_id`
 
 index2 <- sapply(ids, function(x) unique(x$match_id)) %in% ids_collected
@@ -80,33 +79,32 @@ for (i in i:N) {
             silent = TRUE
         )
 
-        history2 <-  try(
-            R.utils::withTimeout(
-                         get_match_history(
-                             account_id = p$account_id[j],
-                             start_at_match_id = p$match_id[j],
-                             hero_id = p$hero_id[j]
-                         ),
-                         timeout = 10,
-                         onTimeout = "silent"
-                     ),
-            silent = TRUE
-        )
+        # history2 <-  try(
+        #     R.utils::withTimeout(
+        #                  get_match_history(
+        #                      account_id = p$account_id[j],
+        #                      start_at_match_id = p$match_id[j],
+        #                      hero_id = p$hero_id[j]
+        #                  ),
+        #                  timeout = 10,
+        #                  onTimeout = "silent"
+        #              ),
+        #     silent = TRUE
+        # )
         
 
-        if (class(history) == "try-error" |
-            class(history2) ==  "try-error") stop("Fail! Restarting... try-error")
+        if (class(history) == "try-error") stop("Fail! Restarting... try-error")
 
         player_match_id <- sapply(history$content$matches,
                                   function(x) x$match_id)
         
-        player_match_id2 <- sapply(history2$content$matches,
-                                   function(x) x$match_id)
+        # player_match_id2 <- sapply(history2$content$matches,
+        #                            function(x) x$match_id)
         
         player_match_id <- unlist(player_match_id)
-        player_match_id2 <- unlist(player_match_id2)
+        # player_match_id2 <- unlist(player_match_id2)
 
-        player_match_id <- unique(c(player_match_id2, player_match_id))
+        # player_match_id <- unique(c(player_match_id2, player_match_id))
 
         #! Informação armazenada do jogador no MongoDB
         player_db <-  m2$find(

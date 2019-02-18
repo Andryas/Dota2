@@ -44,3 +44,12 @@ dota2.pem
 ideias.Rmd
 ideias.html
 TCCdocs/
+docs/*.aux
+docs/*.bbl
+docs/*.blg
+docs/*.brf
+docs/*.idx
+docs/*.ilg
+docs/*.ind
+docs/*.log
+docs/*.toc
