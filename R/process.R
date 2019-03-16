@@ -10,7 +10,8 @@ process <- function(limit = 10000) {
     files <- list.files(pattern = "md_.+.rds")
     if (length(files) == 0) match_id <- "[]" else match_id <- jsonlite::toJSON(do.call(c, lapply(files, readRDS)))
 
-    df <- m$find(paste0('{"_pi": 1, "players_available": 10, "match_id":{ "$nin":', match_id,' }}'), limit = limit)
+    df <- m$find(paste0('{"_pi": 1, "game_mode": 22, "players_available": 10,',
+                        '"match_id":{ "$nin":', match_id,' }}'), limit = limit)
 
     df <- as_tibble(df)
 
