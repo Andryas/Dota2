@@ -161,8 +161,9 @@ get_heroes_details <- function(key) {
     }
 
     x <- lapply(heroes$name, scrap)
-    bind_rows(x)
+    x <- bind_rows(x)
+    left_join(x, heroes %>% rename(hero = "name") %>% select(hero, id), by = "hero")
 }
 
-# x <- get_heroes_details(key = readRDS("~/Dota2/keyapi.RData")[1])
+# x  <- get_heroes_details(key = readRDS("~/Dota2/keyapi.RData")[1])
 # saveRDS(x, "~/Dota2/heroes.RData")

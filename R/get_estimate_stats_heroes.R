@@ -1,7 +1,6 @@
 source("packages.R")
-setwd("~/Dota2/data")
+setwd("~/Dota2")
 options(dplyr.width = Inf)
-
 
 estimate_hero <- function(limit = Inf) {
     m <- mongo("match", "dota2")
@@ -115,5 +114,23 @@ estimate_hero <- function(limit = Inf) {
     
 }
 
-out <- estimate_hero(100000)
-
+# system.time({out <- estimate_hero(100000)})
+# 
+# df <- readRDS("heroes.RData")
+# 
+# hero <- out$hero %>%
+#     rename(id = "hero_id")
+# 
+# hero_ability <- out$hero_ability %>%
+#     ungroup() %>% 
+#     nest(-hero_id, .key = ability_up) %>%
+#     rename(id = "hero_id")
+# 
+# df <- df %>%
+#     left_join(hero, by = "id") %>%
+#     left_join(hero_ability, by = "id") %>%
+#     select(id, hero, bioroles, int, agi, str, move,
+#            alcvis, alcatq, velproj, winrate, ingame, n,
+#            atr, ability_desc, ability_up)
+#     
+# saveRDS(df, "heroes.RData")
