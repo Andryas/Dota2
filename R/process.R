@@ -37,64 +37,168 @@ process <- function(limit = 10000) {
               "ability_upgrades_var", "win_player"
               )
 
-    num_cl <- detectCores()                     ## get all cores
-    cl <- makeCluster(num_cl)           
-    player_info$k <- rep(1:4, each = limit/4)      ## split in four folds
-    ll <- split(player_info, player_info$k)
-    clusterExport(cl, list("m", "m2", "cols"), envir = environment())  ## export objetcs
-    # clusterExport(cl, list("m", "m2", "cols"))  ## export objetcs
-    clusterEvalQ(cl, library(mongolite))        ## call library
+    # num_cl <- detectCores()                     ## get all cores
+    # cl <- makeCluster(num_cl)           
+    # player_info$k <- rep(1:4, each = limit/4)      ## split in four folds
+    # ll <- split(player_info, player_info$k)
+    # clusterExport(cl, list("m", "m2", "cols"), envir = environment())  ## export objetcs
+    # # clusterExport(cl, list("m", "m2", "cols"))  ## export objetcs
+    # clusterEvalQ(cl, pacman::p_load(mongolite, dplyr))        ## call library
+    # 
+    # x <- parLapply(cl, ll, function(l) {
+    #     mapply(SIMPLIFY = FALSE,
+    #            account_id = l$account_id,
+    #            start_time = l$start_time, 
+    #            function(account_id, start_time) {
+    # 
+    #                query <- paste0('{"_id":', account_id,
+    #                                ', "details.start_time": {"$lt": ',
+    #                                start_time,'}}')
+    # 
+    #                fields <- paste0('"details.', c(cols[-c(17:19)], "radiant_win", "position", 
+    #                                                "ability_upgrades", "start_time"), '": 1 ')
+    #                fields <- paste0(fields, collapse = ", ")
+    #                fields <- paste0("{", fields, "}")
+    #                
+    #                x <- m2$find(query, fields)$details[[1]] %>%
+    #                                          as_tibble()
+    #                
+    #                if (is.data.frame(x) & all(c(cols[-c(17:19)], "ability_upgrades") %in% names(x))) {
+    #                    ## lvl min 10 and not null
+    #                    x <- x[sapply(x$ability_upgrades, is.data.frame), ]
+    #                    x <- x[sapply(x$ability_upgrades, nrow) >= 10, ]
+    #                    
+    #                    ## last 10 matches
+    #                    x <- x[order(x$start_time, decreasing = TRUE), ][1:(ifelse(nrow(x) < 10,
+    #                                                                               nrow(x), 10)), ]
+    #                    
+    #                    
+    #                    # cria variaveis summarisadas da variável ability_upgrades
+    #                    x$ability_upgrades_mean <- sapply(x$ability_upgrades, function(x) {
+    #                        if (is.data.frame(x)) {
+    #                            mean(c(x$time[1], diff(x$time)))
+    #                        } else {
+    #                            NA
+    #                        }
+    #                    })
+    # 
+    #                    x$ability_upgrades_var <- sapply(x$ability_upgrades, function(x) {
+    #                        if (is.data.frame(x)) {
+    #                            var(c(x$time[1], diff(x$time)))
+    #                        } else {
+    #                            NA
+    #                        }
+    #                    })
+    # 
+    #                    # Calcula se o jogador venceu a partida
+    #                    x$win_player <- as.integer((isTRUE(x$radiant_win) & x$position <= 5) |
+    #                                               (!isTRUE(x$radiant_win) & x$position > 5))
+    #                    
+    #                    x %>% select(!!cols)
+    #                } else {
+    #                    NULL
+    #                }
+    #            })
+    # })
+    # 
+    # stopCluster(cl)
 
-    x <- parLapply(cl, ll, function(l) {
-
-        x <- mapply(SIMPLIFY = FALSE,
-               account_id = l$account_id,
-               start_time = l$start_time, 
-               function(account_id, start_time) {
-                   x <- m2$find(paste0('{"_id":', account_id, ', "details.start_time": {"$lt": ',
-                                       start_time,'}}'))$details[[1]]
-                   
-                   if (is.null(x) | !all(c(cols[-c(17:19)], "ability_upgrades") %in% names(x))) {
-                       NULL
-                   } else {
-                       x <- x[order(x$start_time, decreasing = TRUE), ][1:(ifelse(nrow(x) < 10, nrow(x), 10)), ]
-                       
-                       # cria variaveis summarisadas da variável ability_upgrades
-                       x$ability_upgrades_mean <- sapply(x$ability_upgrades,
-                                                         function(x) {
-                                                             if (is.null(x) | length(x) == 0 | nrow(x) == 0) NA
-                                                             else mean(c(x$time[1], diff(x$time)))
-                                                         })
-
-                       x$ability_upgrades_var <- sapply(x$ability_upgrades,
-                                                        function(x) {
-                                                            if (is.null(x) | length(x) == 0 | nrow(x) == 0) NA
-                                                            else var(c(x$time[1], diff(x$time)))
-                                                        })
-
-                       # Calcula se o jogador venceu a partida
-                       x$win_player <- as.integer((isTRUE(x$radiant_win) & x$position <= 5) |
-                                                  (!isTRUE(x$radiant_win) & x$position > 5))
-                       
-                       x[, cols]
-                   }
-               })
-        
-    })
+    # ==========================================================================
+    i <- 1
     
-    stopCluster(cl)
+    x <- mapply(SIMPLIFY = FALSE,
+                account_id = player_info$account_id,
+                start_time = player_info$start_time,
+                match_id = player_info$match_id, 
+                function(account_id, start_time, match_id) {
+                    query <- paste0('{"_id":', account_id,
+                                    ', "details.start_time": {"$lt": ',
+                                    start_time,'}}')
+                    
+                    fields <- paste0('"details.', c(cols[-c(17:19)], "radiant_win", "position", 
+                                                    "ability_upgrades", "start_time"), '": 1 ')
+                    fields <- paste0(fields, collapse = ", ")
+                    fields <- paste0("{", fields, "}")
+                    
+                    x <- m2$find(query, fields)$details[[1]] %>%
+                                              as_tibble()
+                    
+                    if (is.data.frame(x) & all(c(cols[-c(17:19)], "ability_upgrades") %in% names(x))) {
+                        if (length(x$ability_upgrades) > 0) {
+                            ability_nrow <- sapply(lapply(x$ability_upgrades, nrow),
+                                                   function(x) {
+                                                       ifelse(is.null(x), 0, x)
+                                                   })
+                            ## nrow>10
+                            if (sum((ability_nrow >= 10)) >= 10) {
+                                x <- x[sapply(x$ability_upgrades, is.data.frame), ]
+                                x <- x[sapply(x$ability_upgrades, nrow) >= 10, ]
+                            } 
+                            ## last 10 matches
+                            x <- x[order(x$start_time, decreasing = TRUE), ]
+                            x <- x[1:(ifelse(nrow(x) < 10, nrow(x), 10)), ]
+                            
+                            
+                            # cria variaveis summarisadas da variável ability_upgrades
+                            x$ability_upgrades_mean <- sapply(x$ability_upgrades, function(x) {
+                                if (is.data.frame(x)) {
+                                    mean(c(x$time[1], diff(x$time)))
+                                } else {
+                                    NA
+                                }
+                            })
+
+                            x$ability_upgrades_var <- sapply(x$ability_upgrades, function(x) {
+                                if (is.data.frame(x)) {
+                                    var(c(x$time[1], diff(x$time)))
+                                } else {
+                                    NA
+                                }
+                            })
+                            # Calcula se o jogador venceu a partida
+                            x$win_player <- as.integer((isTRUE(x$radiant_win) & x$position <= 5) |
+                                                       (!isTRUE(x$radiant_win) & x$position > 5))
+
+                            i <<- i + 1
+                            x %>%
+                                select(!!cols) %>%
+                                mutate(match_id = match_id)
+                        } else {
+                            x$ability_upgrades_mean <- NA
+                            x$ability_upgrades_var <- NA
+                            x$win_player <- as.integer((isTRUE(x$radiant_win) & x$position <= 5) |
+                                                       (!isTRUE(x$radiant_win) & x$position > 5))
+
+                            i <<- i + 1
+
+                            x %>%
+                                select(!!cols) %>%
+                                mutate(match_id = match_id)
+                        }
+                    } else {
+                        i <<- i + 1
+                        NULL
+                    }
+                })
     
+    # ==========================================================================
+
     x <- lapply(x, bind_rows)
     x <- as_tibble(bind_rows(x))
 
     x2 <- x %>%
-        group_by(account_id) %>%
+        filter(!is.na(account_id)) %>% 
+        group_by(account_id, match_id) %>%
+        mutate(n =  n())  %>%
         summarise_all(.funs = funs(mean, var)) %>%
-        mutate(n =  as.integer(table(x$account_id))) %>%
         left_join(player_info[, c("account_id", "hero_id", "team", "match_id")],
-                  by = "account_id") %>% 
+                  by = c("account_id", "match_id")) %>% 
         as_tibble() %>%
-        arrange(match_id, team)
+        arrange(match_id, team) %>%
+        select(-n_var) %>%
+        rename(n = n_mean)
+
+    # x %>% filter(account_id == "68025666", match_id ==  "4400547070")
 
     uq_match_id <- unique(x2$match_id)
 
@@ -108,3 +212,5 @@ process <- function(limit = 10000) {
     m$disconnect()
     m2$disconnect()
 }
+
+
