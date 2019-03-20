@@ -53,3 +53,6 @@ docs/*.ilg
 docs/*.ind
 docs/*.log
 docs/*.toc
+docs/*.lof
+docs/*.loq
+docs/*.lot
