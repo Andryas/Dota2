@@ -15,8 +15,8 @@ args <- commandArgs(TRUE)
 
 setwd("~/Dota2/id/")
 
-match_script <- normalizePath("~/Documentos/projetos/dota2/R/get_details_match.R")
-player_script <- normalizePath("~/Documentos/projetos/dota2/R/get_details_player.R")
+match_script <- normalizePath("~/Documentos/github/dota2/R/get_details_match.R")
+player_script <- normalizePath("~/Documentos/github/dota2/R/get_details_player.R")
 
 if (!(args[1] %in% c("match", "player"))) {
     # print(eval(parse(text = args[2])))
@@ -41,7 +41,7 @@ if (args[1] == "match") {
     P <- ls(envp)
     EVAL <- function(x, ...) {eval(parse(text = paste0("envp$", x, ...)))}
 
-    today  <- Sys.Date()
+    today  <- Sys.time() + 10800
 
     ## Eval if the process is running in background
     while (TRUE) {
@@ -70,7 +70,7 @@ if (args[1] == "match") {
             files <- files[-rmvP]
         }
 
-        if (Sys.Date() > today) stop("Another Day")
+        if (Sys.time() > today) stop("Another Day")
 
         Sys.sleep(60)
     }
