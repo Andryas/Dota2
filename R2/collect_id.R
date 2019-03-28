@@ -1,4 +1,13 @@
-#' Collect a massive amount of matches id's.
+#' @title Collect a massive amount of matches id's.
+#'
+#' @description This function is used to collected the matches id of games that is happing in this
+#'     exactly moment to later collect the details of the match after finishing. It is just useful
+#'     to the \code{\link{collect}} function.
+#'
+#' @return This function return 0 if it failed to collect the data and return 1 if success to
+#'     collect the data and stored it in the MongoDB.
+#'
+#' @seealso \code{\link{collect}}
 
 collect_id <- function(key, skill = 3, game_mode = c(2, 22), lobby_type = c(7)) {
     if (length(skill) != 1) stop("Skill must be a number between 0-3")

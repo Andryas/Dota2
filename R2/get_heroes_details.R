@@ -1,5 +1,20 @@
+#' @title Details about each hero
+#'
+#' @description Details about each hero such as STR, AGI, INT, Range of day vision or night etc...
+#'
+#' @param key The api key obtained from Steam. If you don't have one please visit
+#'  \url{https://steamcommunity.com/dev} in order to do so.
+#'
+#' @return A data frame where each row contains a hero and his/her attributes.
+#'
+#' @examples
+#' df <- get_hero_detais(key = 'xxxxx-xxxxx')
+#' head(df)
+#' 
+#' @export
+
 get_heroes_details <- function(key) {
-    `%>%` <-  magrittr::`%>%`
+    `%>%` <-  dplyr::`%>%`
     
     heroes <- RDota2::get_heroes(key = key)$content
     heroes$name <- gsub("npc_dota_hero_", "", heroes$name, perl = TRUE)
