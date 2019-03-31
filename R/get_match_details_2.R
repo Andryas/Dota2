@@ -3,10 +3,6 @@
 #' @description This function is a wrapper of RDota2::get_match_details. The purpose of this
 #'     function is to try to collect the details matches until your success or fail, without
 #'     returning a error.
-#'
-#' @param ... Args from RDota2::get_match_details
-#'
-#' @seealso \code{\link[RDota2]{get_match_details}}
 
 get_match_details_2 <- function(...) {
     while (TRUE) {

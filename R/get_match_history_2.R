@@ -4,10 +4,7 @@
 #'     function is to try to collect the history of matches until your success or fail, without
 #'     returning a error.
 #'
-#' @param ... Args from RDota2::get_match_history
-#'
-#' @seealso \code{\link[RDota2]{get_match_history}}
-
+#' 
 get_match_history_2 <- function(...) {
     while (TRUE) {
         if (isTRUE(curl::has_internet())) {
