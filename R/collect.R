@@ -1,132 +1,75 @@
-#!/usr/bin/env Rscript
+collect <- function(n_process = 4) {
 
-# Libraries
-library(processx)
-library(mongolite)
+    
+    # config ---------------------------------------------------------------------------------------
+    m <- mongolite::mongo("config", "teste")
+    config <- m$find('{"_id": "config"}')
+    m$disconnect()
+    key <- config$keyapi[[1]]
+    game_mode <- config$game_mode[[1]]
+    lobby_type <- config$lobby_type[[1]]
+    skill <- config$skill[[1]]
+    public_account_id <- config$public_account_id[[1]]
+    duration <- config$duration[[1]]
+    min_players <- config$min_players[[1]]
+    key <- if (length(key) > (n_process + 1)) {
+               key[2:(n_process + 1)]
+           } else {
+               stop(paste0("n_process must be less than the number of registered keys.\n",
+                           "n_process == (length(registered_key) - 1)"))
+           }
 
-# Mongodb
-m <- mongo(collection = "match", db = "dota2")   # Match
-m2 <- mongo(collection = "player", db = "dota2") # Player
+    config <- lapply(key, function(x) list(key = x, game_mode = game_mode,
+                                           lobby_type = lobby_type, skill = skill,
+                                           public_account_id = public_account_id,
+                                           duration = duration, min_players = min_players))
+    
 
-# Configs
-# 1: match or player
-# 2: seq(1:5) (keyapi and files with IDs to collect)
-args <- commandArgs(TRUE)
-
-setwd("~/Dota2/id/")
-
-match_script <- normalizePath("~/Documentos/github/dota2/R/get_details_match.R")
-player_script <- normalizePath("~/Documentos/github/dota2/R/get_details_player.R")
-
-if (!(args[1] %in% c("match", "player"))) {
-    # print(eval(parse(text = args[2])))
-    stop("First arg must be 'match' or 'player'")
-}
-
-# ------------------------------------------------------------------------------
-# Creating Process to collect match
-# ------------------------------------------------------------------------------
-if (args[1] == "match") {
-    envp <- new.env()
-
-    files <- list.files(pattern = "id-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]+.RData")
-    files <- files[1:length(eval(parse(text = args[2])))]
-
-    for (i in 1:length(files)) {
-        assign(paste0("p", i), process$new(match_script, c(i, files[i])),
-               envir = envp)
-        Sys.sleep(4)
+    # id -------------------------------------------------------------------------------------------
+    ids <- as.integer(Sys.Date() - 1) ## collect details from last days id
+    m <- mongolite::mongo(paste0("ids", skill), "teste")
+    id <- m$find(paste0('{"_id": ', ids, '}'))
+    if (nrow(id) > 0) {
+        id <- id$match_id[[1]]
+    } else {
+        return(print("No ids available to collect."))
     }
+    m$disconnect()
 
-    P <- ls(envp)
-    EVAL <- function(x, ...) {eval(parse(text = paste0("envp$", x, ...)))}
+    
+    # collect --------------------------------------------------------------------------------------
+    num_cl <- parallel::detectCores()
+    num_cl <- ifelse(n_process <= num_cl, n_process, 2)
+    cl <- parallel::makeCluster(num_cl)
+    source("~/Documentos/github/dota2/R2/get_match_details_2.R")
+    source("~/Documentos/github/dota2/R2/collect_details_match.R")
+    parallel::clusterExport(cl, list("get_match_details_2", "ids",
+                                     "collect_details_match"), envir = environment())
+    # parallel::clusterExport(cl, list("get_match_details_2", "collect_details_match", "ids"))
+    ll <- data.frame(id = id, k = ceiling((1:length(id))/(length(id)/num_cl)))
+    ll <- split(ll, ll$k)
+    ll <- mapply(l = ll, config = config, function(l = ll, config = config) {
+        append(list(id = l$id), list(config = config))
+    }, SIMPLIFY = FALSE)
+    
+    out <- parallel::parLapply(cl, ll, function(l) {
 
-    today  <- Sys.time() + 10800
+        lapply(l$id, function(match_id) {
+            collect_details_match(
+                match_id = match_id,
+                key = l$config$key,
+                public_account_id = l$config$public_account_id,
+                duration = l$config$duration,
+                game_mode = l$config$game_mode,
+                lobby_type = l$config$lobby_type,
+                skill = l$config$skill,
+                ids = ids
+            )
+        })
+        
+    })
 
-    ## Eval if the process is running in background
-    while (TRUE) {
-        rmvP <- NULL
-
-        if (length(P) == 0) break
-
-        for (i in 1:length(P)) {
-            if (!EVAL(P[i], "$is_alive()")) {
-                if (file.exists(files[i])) {
-                    assign(P[i],
-                           process$new(match_script, c(i, files[i])),
-                           envir = envp
-                           )
-
-                    Sys.sleep(3)
-
-                } else {
-                    rmvP <- c(rmvP, i)
-                }
-            }
-        }
-
-        if (!is.null(rmvP)) {
-            P <- P[-rmvP]
-            files <- files[-rmvP]
-        }
-
-        if (Sys.time() > today) stop("Another Day")
-
-        Sys.sleep(60)
-    }
-
-    file.remove(list.files(pattern = paste0(gsub("id-|.RData", "", files), collapse = "|")))
-}
-
-# ------------------------------------------------------------------------------
-# Creating Process to collect player
-# ------------------------------------------------------------------------------
-if (args[1] == "player") {
-
-    envp <- new.env()
-
-    for (i in eval(parse(text = args[2]))) {
-
-        assign(paste0("p", i),
-               process$new(player_script,
-                           c(i, paste0("J", i, ".RData"))),
-               envir = envp)
-
-        Sys.sleep(4)
-    }
-
-    P <- ls(envp)
-    EVAL <- function(x, ...) {eval(parse(text = paste0("envp$", x, ...)))}
-    today  <- Sys.Date()
-
-    ## Eval if the process is running in background
-    while (TRUE) {
-        rmvP <- NULL
-
-        if (length(P) == 0) break
-
-        for (i in 1:length(P)) {
-            if (!EVAL(P[i], "$is_alive()")) {
-                if (file.exists(paste0("J", gsub("p", "", P[i]), ".RData"))) {
-                    assign(P[i],
-                           process$new(player_script,
-                                       c(gsub("p", "", P[i]),
-                                         paste0("J", gsub("p", "", P[i]), ".RData"))),
-                           envir = envp)
-
-                    Sys.sleep(3)
-                } else {
-                    rmvP <- c(rmvP, as.integer(gsub("p", "", P[i])))
-                }
-            }
-        }
-
-        if (!is.null(rmvP)) P <- P[-rmvP]
-
-        if (today < Sys.Date()) stop("Another Day")
-
-        Sys.sleep(60)
-    }
-
-    file.remove(list.files(pattern = paste0(gsub("id-|.RData", "", files), collapse = "|")))
+    tb <- table(c(unlist(out)))
+    return(tb)
+    ## save mongodb
 }
