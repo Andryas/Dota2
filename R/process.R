@@ -1,4 +1,6 @@
+
 process <- function(limit = 1000, players_available = 10, parallel = FALSE) {
+    ptm <- proc.time()
     `%>%` <-  magrittr::`%>%`
 
     m <- mongolite::mongo(collection = "match", db = "dota2")
@@ -247,6 +249,5 @@ process <- function(limit = 1000, players_available = 10, parallel = FALSE) {
 
     DBI::dbDisconnect(con)
     invisible(gc(reset = TRUE))
+    print(proc.time() - ptm)
 }
-
-

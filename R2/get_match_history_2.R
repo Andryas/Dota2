@@ -1,12 +1,12 @@
 #' @title A list of matches
 #'
-#' @description This functions is a wrapper of RDota2::get_match_history. The purpose of this
+#' @description This function is a wrapper of RDota2::get_match_history. The purpose of this
 #'     function is to try to collect the history of matches until your success or fail, without
 #'     returning a error.
 #'
-#' @param ... Args from RDota2::get_match_details
+#' @param ... Args from RDota2::get_match_history
 #'
-#' @seealso \code{\link[RDota2]{get_match_details}}
+#' @seealso \code{\link[RDota2]{get_match_history}}
 
 get_match_history_2 <- function(...) {
     while (TRUE) {
@@ -16,16 +16,17 @@ get_match_history_2 <- function(...) {
                                      timeout = 3,
                                      onTimeout = "silent"
                                  )
-            if ("content" %in% names(history)) {
-                if ("error" %in% names(history[["content"]])) {
+            
+            if ("content" %in% names(content)) {
+                if ("error" %in% names(content[["content"]])) {
                     content <- NULL
                     break
                 } 
             }
             
-            if (history$response[["status_code"]] %in% c(429, 503, 500, 777)) {
+            if (content$response[["status_code"]] %in% c(429, 503, 500, 777)) {
                 Sys.sleep(30)
-            } else if (history$response[["status_code"]] %in% c(400, 404, 401, 403)) {
+            } else if (content$response[["status_code"]] %in% c(400, 404, 401, 403)) {
                 content <- NULL
                 break
             } else {

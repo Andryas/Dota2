@@ -1,5 +1,6 @@
 collect <- function(n_process = 4) {
 
+    
     # config ---------------------------------------------------------------------------------------
     m <- mongolite::mongo("config", "teste")
     config <- m$find('{"_id": "config"}')

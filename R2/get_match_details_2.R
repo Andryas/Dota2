@@ -1,6 +1,6 @@
 #' @title Get the information about a specific match
 #'
-#' @description This functions is a wrapper of RDota2::get_match_details. The purpose of this
+#' @description This function is a wrapper of RDota2::get_match_details. The purpose of this
 #'     function is to try to collect the details matches until your success or fail, without
 #'     returning a error.
 #'
@@ -14,7 +14,7 @@ get_match_details_2 <- function(...) {
             content <-  R.utils::withTimeout(
                                      RDota2::get_match_details(...),
                                      timeout = 3,
-                                     onTimeout = "error"
+                                     onTimeout = "silent"
                                  )
             
             if ("content" %in% names(content)) {
