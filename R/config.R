@@ -65,7 +65,11 @@
 #' 
 #' @param duration The minimum duration of a match in seconds. (Default: 900)
 #' @param public_account_id The minimum of public account's id. (Default: 5)
+#' @param n_history_matches The amount of history matches that must be collected for each player in the
+#'     game. (Default: 10)
 #'
+#' @details The args key can be a vector of available API keys. 
+#' 
 #' @return A message saying that the settings have been logged.
 #'
 #' @examples
@@ -74,9 +78,18 @@
 #' config(key = 'xxxxx-xxxxx')
 #' @export
 
-
 config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, duration = 900, 
-                   public_account_id = 5) {
+                   public_account_id = 5, n_history_matches = 10) {
+
+    if (length(skill) != 1) stop("skill must be one number between: 0-3.")
+    if (length(lobby_type) != 1) stop("lobby_type must be one unique number.")
+    if (lenght(public_account_id) != 1) stop("public_account_id must be one unique number that
+    represents the minimum of public accounts allowed at match.")
+    if (lenght(n_history_matches) != 1) stop("n_history_matches must be one unique number that
+    represents the amount of matches that will be collect from each player in a game.")
+    if (!is.numeric(duration)) stop("duration must be a number that represents the minimum of
+    time in seconds that a match must have.")
+    
     # Check keys
     x <- lapply(key, function(key) {
         x <- try(RDota2::get_heroes(key = key), silent=TRUE)
@@ -100,13 +113,15 @@ config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, 
 
     if (length(x) == 0) stop("All keys are bad. Please check the keys or try again.")
     
-    m <- mongolite::mongo("config", "teste")
+    m <- mongolite::mongo("config", "dota")
     query <- paste0('{"_id": "config"}')
     update <- paste0('{ "$addToSet": { "keyapi": { "$each": ', jsonlite::toJSON(key), '}}}')
     m$update(query = query, update = update, upsert = TRUE)
 
-    args <- list(game_mode, lobby_type, skill, public_account_id, duration)
-    nargs <- c("game_mode", "lobby_type", "skill", "public_account_id", "duration")
+    args <- list(game_mode, lobby_type, skill, public_account_id, duration,
+                 n_history_matches)
+    nargs <- c("game_mode", "lobby_type", "skill", "public_account_id", "duration",
+               "n_history_matches")
     invisible(mapply(a = args, na = nargs, function(a, na) {
         update <- paste0('{ "$addToSet": { "', na, '": { "$each": ', jsonlite::toJSON(a), '}}}')
         m$update(query = query, update = update, upsert = TRUE)
