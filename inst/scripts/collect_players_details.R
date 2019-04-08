@@ -3,36 +3,23 @@
 args <- commandArgs(trailingOnly = TRUE)
 
 key <- args[1]
-lobby_type <- args[2]
-skill <- args[3]
-duration <- args[4]
-match_id <- args[5]
-n_history_matches <- args[6]
+
+m <- mongolite::mongo("collect_account_id", "dota")
+configs <- dplyr::as_tibble(m$find(paste0('{"_id": "', key,'"}')))
+m$disconnect()
+
+p <- dplyr::as_tibble(configs$account_id[[1]])
+
+if (nrow(p) == 0) stop("")
+
+game_mode <- configs$game_mode[[1]]
+lobby_type <- configs$lobby_type[[1]]
+skill <- configs$skill[[1]]
+duration <- configs$duration[[1]]
+public_account_id <- configs$public_account_id[[1]]
+n_history_matches <- configs$n_history_matches[[1]]
 
 `%>%` <-  dplyr::`%>%`
-
-# connect to collection
-m <- mongolite::mongo("match", "dota")
-mp <- mongolite::mongo("players", "dota")
-
-# id to collect
-query <- paste0('{"_id": ', match_id, '}')
-fields <- '{"players": 1, "start_time": 1, "match_id": 1}'
-
-p <- m$find(query = query, fields = fields) %>%
-    dplyr::as_tibble()
-
-p$players <- lapply(p$players, function(x) {
-    x %>%
-        dplyr::select(account_id, hero_id) %>%
-        dplyr::as_tibble()
-})
-
-p <- tidyr::unnest(p, players)
-p <- p %>% dplyr::rename(id = `_id`)
-
-# remove private account id
-p <- p %>% dplyr::filter(account_id != 4294967295)
 
 for (j in 1:nrow(p)) {
 
@@ -42,13 +29,7 @@ for (j in 1:nrow(p)) {
         key = key
     )
 
-    if (is.null(history)) {
-        m <- mongolite::mongo("players", "dota")
-        query <- paste0('{"_id": ', p$account_id[j], '}')
-        update <- paste0('{"$addToSet": {"badid": ', p$match_id[j], '}}')
-        m$update(query = query, update = update)
-        m$disconnect()
-    }
+    if (is.null(history)) next
     
     ## Get only players match with the lobby_type: ...
     h <- lapply(history$content$matches, function(x) {
@@ -79,7 +60,7 @@ for (j in 1:nrow(p)) {
     last_heroes_played <- as.data.frame.table(table(last_heroes_played), stringsAsFactors = FALSE)
     last_heroes_played <- last_heroes_played[order(last_heroes_played$Freq, decreasing = TRUE), ]
     names(last_heroes_played) <- c("hero_id", "n")
-    last_heroes_played$match_id <- unique(p$match_id)
+    last_heroes_played$match_id <- unique(p$match_id[j])
     # last_heroes_played$start_time <- p$start_time[j]
 
     last_heroes_played <- list("$addToSet" = list(
@@ -89,6 +70,7 @@ for (j in 1:nrow(p)) {
     player_match_id <- sapply(history$content$matches, function(x) x$match_id)
     player_match_id <- unlist(player_match_id)
 
+    mp <- mongolite::mongo("players", "dota")
 
     mp$update(
            query = paste0('{"_id":', p$account_id[j], '}'),
@@ -96,7 +78,6 @@ for (j in 1:nrow(p)) {
            upsert = TRUE
        )
 
-    
     #! Informação armazenada do jogador no MongoDB
     player_db <-  mp$find(
                          query = paste0('{"_id": ', p$account_id[j], '}'),
@@ -199,11 +180,25 @@ for (j in 1:nrow(p)) {
         player_match_id <- player_match_id[-1]
     }
     
+    mp$disconnect() ## disconnect from player's collection
+
+    ## Remove player from collect_account_id
+    mp <- mongolite::mongo("collect_account_id", "dota")
+    match_id <- mp$find(paste0('{"_id": "', key, '"}'))
+    query <- paste0('{"_id": "', key, '"}')
+    update <- paste0('{"$pull": {"account_id": {"match_id": ', p$match_id[j], ',',
+                     ' "account_id": ', p$account_id[j], '}}}')
+    mp$update(query = query, update = update)
+    match_id <- unique(mp$find(paste0('{"_id": "', key, '"}'))$account_id[[1]]$match_id)
+    mp$disconnect()
+    
+    if (!(p$match_id[j] %in% match_id)) {
+        m <- mongolite::mongo("match", "dota")
+        m$update(paste0('{"_id":', p$match_id[j], '}'), '{"$set": {"_pi": 1}}')
+        m$disconnect() 
+    }
 }
 
 
-mp$disconnect() ## disconnect from player's collection
-m <- mongolite::mongo("match", "dota")
-m$update(paste0('{"_id":', unique(p$match_id), '}'), '{"$set": {"_pi": 1}}')
-m$disconnect() ## disconnect from match's collection
+
 
