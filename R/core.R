@@ -15,33 +15,56 @@ collect <- function(type = "collect_id") {
     n_history_matches <- config_info$n_history_matches[[1]]
 
     if (type == "collect_id") {
+        m <- mongolite::mongo("track", "dota")
+        m2 <- mongolite::mongo("players", "dota")
+        m3 <- mongolite::mongo("match", "dota")
+        m4 <- mongolite::mongo(paste0("match_id_", skill), "dota")
+        n_player <- m2$info()$stats$count
+        n_match <- m3$info()$stats$count
+        n_id <- length(m4$find(paste0('{"_id": ', as.integer(Sys.Date() - 1) ,'}'))$match_id[[1]])
+        if (is.null(n_player)) n_player <- 0
+        if (is.null(n_match)) n_match <- 0
+        if (is.null(n_id)) n_id <- 0
+        info <- list("_id" = as.integer(Sys.Date() - 1),
+                     date = Sys.Date() - 1,
+                     player = n_player,
+                     match = n_match,
+                     match_id = n_id)
+        m2$disconnect()
+        m3$disconnect()
+        m4$disconnect()
+        m$insert(jsonlite::toJSON(info, auto_unbox = TRUE))
+        m$disconnect()
+        
         # script <- "/home/andryas/Documentos/github/RDota2Plus/inst/scripts/collect_id.R"
         script <- system.file(package = "RDota2Plus", "scripts", "collect_id.R")
         p <- processx::process$new(script, c(key[1], lobby_type, skill))
 
         ## Eval if the process is running in background
+        today <- as.integer(Sys.Date())
         while (TRUE) {
             if (!p$is_alive()) {
                 p <- processx::process$new(script, c(key[1], lobby_type, skill))
             }
             Sys.sleep(900)
+            if (as.integer(Sys.Date()) > today) stop("New Day")
         }
     } else if (type == "collect_match_details") {
         m <- mongolite::mongo(paste0("match_id_", skill), "dota")
-        query <- paste0('{"_id": { "$lt": ', as.integer(Sys.Date()), '}}')
+        query <- paste0('{"_id": { "$lt": ', as.integer(Sys.Date() - 1), '}}')
         fields <- '{"_id": 1, "match_id": 1}'
         df <- dplyr::as_tibble(m$find(query, fields ,'{"_id": -1}', limit = 7))
         m$disconnect()
         
         if (nrow(df) == 0) stop("No matches to collect")
-
+        
+        
         document <- df[1, ]$`_id`[[1]]
         match_id <- df[1, ]$match_id[[1]]
         script <- system.file(package = "RDota2Plus", "scripts", "collect_match_details.R")
-        # script <- "/home/andryas/Documentos/github/RDota2Plus/inst/scripts/collect_match_details.R"
-        # m$remove(paste0('{"_id": ', document, '}'), just_one = TRUE)
-        
-        key <- key[-1] ## One key serves to collect match_id
+
+        ## One key serves to collect match_id
+        if (length(key) == 1) key <- key[1] else key <- key[-1] 
         match_id <- match_id[1:((length(match_id) %/% (length(key))) * (length(key)))]
         if (length(match_id) == 0) stop("No matches to collect")
 
@@ -68,6 +91,7 @@ collect <- function(type = "collect_id") {
             assign(paste0("p", j), processx::process$new(script, c(key[j], document)))
         }
 
+        today <- Sys.time()
         while (TRUE) {
             for (w in 1:length(key)) {
                 n <- m$find(paste0('{"_id": "', key[w], '"}'))$match_id[[1]]
@@ -86,16 +110,24 @@ collect <- function(type = "collect_id") {
             
             if (length(key) == 0) break
 
+            if (as.integer(difftime(Sys.time(), today, units = "mins")) >= 120) {
+                for (w in 1:length(key)) {
+                    eval(parse(text = paste0("p", w, "$kill()")))
+                }
+                
+                quit()
+            }
+
             Sys.sleep(5)
             
         }
         
         m$disconnect()
-        
     } else if (type == "collect_players_details") {
-        key <- key[-1]
+        if (length(key) == 1) key <- key[1] else key <- key[-1] 
 
-        if (n_history_matches == 0) stop("Done")
+        ## if TRUE then the match history player match wont collect
+        if (n_history_matches == 0) stop("collect player history disable (set: 0)")
         
         m <- mongolite::mongo("match", "dota")
         if (!any(grepl("start_time_-1", m$index()$name))) {
@@ -103,8 +135,10 @@ collect <- function(type = "collect_id") {
             m$index(add = '{"start_time": -1}')
         }
         df <- dplyr::as_tibble(m$find('{"_pi": 0}', sort = '{"start_time": -1}',
-                                      limit = 20))
+                                      limit = 20000))
         m$disconnect()
+
+        if (nrow(df) == 0) stop("No account_id to collect")
 
         df$players <- lapply(df$players, function(x) {
             x <- dplyr::select(x, account_id, hero_id)
@@ -133,13 +167,13 @@ collect <- function(type = "collect_id") {
         }
 
         script <- system.file(package = "RDota2Plus", "scripts", "collect_players_details.R")
-        # script <- "/home/andryas/Documentos/github/RDota2Plus/inst/scripts/collect_players_details.R"
         
         ## Start process
         for (j in 1:length(key)) {
             assign(paste0("p", j), processx::process$new(script, key[j]))
         }
 
+        today <- as.integer(Sys.Date())
         while (TRUE) {
             for (w in 1:length(key)) {
                 n <- m$find(paste0('{"_id": "', key[w], '"}'))$account_id[[1]]
@@ -157,13 +191,19 @@ collect <- function(type = "collect_id") {
             }
             
             if (length(key) == 0) break
-
+            if (as.integer(Sys.Date()) > today) {
+                for (w in 1:length(key)) {
+                    eval(parse(text = paste0("p", w, "$kill()")))
+                }
+                
+                stop("New Day")
+            }
+            
             Sys.sleep(5)
             
         }
         
         m$disconnect()
-        
     } else {
         stop("type must be one of the follows args: 'collect_id'
              'collect_match_details' 'collect_players_details'")
