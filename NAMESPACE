@@ -1,0 +1,6 @@
+export(config)
+export(get_heroes_details)
+export(get_match_details_2)
+export(get_match_history_2)
+export(install_crontab)
+

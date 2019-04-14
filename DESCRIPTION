@@ -1,0 +1,27 @@
+Package: RDota2Plus
+Type: Package
+Title: Easy way to collect Dota 2 matches
+Version: 0.1.0
+Author: Andryas Waurzenczak [aut, cre],
+Maintainer: Andryas Waurzenczak <andryas@protonmail.com>
+Description:  
+Depends:
+    R (>= 3.5.0)
+Imports:
+    dplyr,
+    plyr,
+    mongolite,
+    RDota2,
+    jsonlite,
+    processx,
+    httr,
+    xml2,
+    rvest,
+    tidyr,
+    stringr
+License: GPL-3 | file LICENSE
+URL: https://github.com/andryas/RDota2Plus
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
+RoxygenNote: 6.1.1
