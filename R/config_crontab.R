@@ -8,7 +8,7 @@
 #'
 #' @export
 
-config_cronR <- function() {
+config_crontab <- function() {
     if (length(setdiff("cronR", rownames(installed.packages()))) > 0) {
         install.packages(setdiff("cronR", rownames(installed.packages())))  
     }
