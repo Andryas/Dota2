@@ -18,8 +18,8 @@ config_crontab <- function() {
     cmd_collect_players_details <- "Rscript -e \"RDota2Plus::collect('collect_players_details')\" &"
 
     cronR::cron_add(cmd_collect_id, id = "collect_id", at = "00:10")
-    cronR::cron_add(cmd_collect_id, id = "collect_match_details", at = "00:15")
-    cronR::cron_add(cmd_collect_id, id = "collect_players_details", at = "02:20")
+    cronR::cron_add(cmd_collect_match_details, id = "collect_match_details", at = "00:15")
+    cronR::cron_add(cmd_collect_players_details, id = "collect_players_details", at = "02:20")
     cat("\t\tDone\t\t")
 }
 

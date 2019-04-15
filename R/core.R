@@ -1,5 +1,8 @@
 #' The engine to collect the Dota2 data.
 #'
+#' %makes documentation available but removes function from index
+#' @keywords internal
+#' @export
 
 collect <- function(type = "collect_id") {
     m <- mongolite::mongo("config", "dota")

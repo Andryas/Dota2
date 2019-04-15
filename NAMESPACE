@@ -3,4 +3,4 @@ export(get_heroes_details)
 export(get_match_details_2)
 export(get_match_history_2)
 export(config_crontab)
-
+export(collect)
