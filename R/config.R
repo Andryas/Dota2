@@ -83,9 +83,9 @@ config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, 
 
     if (length(skill) != 1) stop("skill must be one number between: 0-3.")
     if (length(lobby_type) != 1) stop("lobby_type must be one unique number.")
-    if (lenght(public_account_id) != 1) stop("public_account_id must be one unique number that
+    if (length(public_account_id) != 1) stop("public_account_id must be one unique number that
     represents the minimum of public accounts allowed at match.")
-    if (lenght(n_history_matches) != 1) stop("n_history_matches must be one unique number that
+    if (length(n_history_matches) != 1) stop("n_history_matches must be one unique number that
     represents the amount of matches that will be collect from each player in a game.")
     if (!is.numeric(duration)) stop("duration must be a number that represents the minimum of
     time in seconds that a match must have.")
