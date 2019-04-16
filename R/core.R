@@ -137,13 +137,12 @@ collect <- function(type = "collect_id") {
         if (n_history_matches == 0) stop("collect player history disable (set: 0)")
         
         m <- mongolite::mongo("match", "dota")
-        if (!any(grepl("start_time_-1", m$index()$name))) {
-            ## Index the field start_time
-            m$index(add = '{"start_time": -1}')
-        }
+        # if (!any(grepl("start_time_-1", m$index()$name))) {
+        #     ## Index the field start_time
+        #     m$index(add = '{"start_time": -1}')
+        # }
         query <- paste0('{"_pi": 0, "public_account_id": {"$gte": ', public_account_id, '}}')
-        df <- dplyr::as_tibble(m$find(query, sort = '{"start_time": -1}',
-                                      limit = 20000))
+        df <- dplyr::as_tibble(m$find(query, limit = 20000))
         m$disconnect()
 
         if (nrow(df) == 0) stop("No account_id to collect")
@@ -167,9 +166,13 @@ collect <- function(type = "collect_id") {
         lp <- lapply(lp, function(x) list("$set" = x))
         
         m <- mongolite::mongo("collect_account_id", "dota")
+        gc(reset = TRUE)
+
+        n_key <- length(key)
+        n_key <- ifelse(n_key >= 4, 4, legnth(key))
         
         ## Register match_id to collect
-        for (i in 1:length(key)) {
+        for (i in 1:n_key) {
             lp_json <- jsonlite::toJSON(lp[[i]], auto_unbox = TRUE)
             m$update(paste0('{"_id": "', key[i], '"}'), lp_json, upser = TRUE)
         }
@@ -177,7 +180,7 @@ collect <- function(type = "collect_id") {
         script <- system.file(package = "RDota2Plus", "scripts", "collect_players_details.R")
         
         ## Start process
-        for (j in 1:length(key)) {
+        for (j in 1:n_key) {
             assign(paste0("p", j), processx::process$new(script, key[j]))
         }
 
