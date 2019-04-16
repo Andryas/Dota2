@@ -27,22 +27,40 @@ for (i in 1:length(match_id)) {
     collection <- paste0("match_id_", skill)
 
     if (is.null(content)) {
+        ## delete match_id from collect_match_id
         m <- mongolite::mongo("collect_match_id", "dota")
         query <- paste0('{"_id": "', key, '"}')
         update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
         m$update(query = query, update = update)
         m$disconnect()
+
+        ## delete match_id from match_id_skill
+        m <- mongolite::mongo(paste0("match_id_", skill), "dota")
+        query <- paste0('{"_id": ', document, '}')
+        update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
+        m$update(query = query, update = update)
+        m$disconnect()
+        
         next
     }
 
     ## Lobby_type & game_mode rules
     if (!(content$content$lobby_type %in% lobby_type) |
         !(content$content$game_mode %in%  game_mode)) {
+        ## delete match_id from collect_match_id
         m <- mongolite::mongo("collect_match_id", "dota")
         query <- paste0('{"_id": "', key, '"}')
         update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
         m$update(query = query, update = update)
         m$disconnect()
+
+        ## delete match_id from match_id_skill
+        m <- mongolite::mongo(paste0("match_id_", skill), "dota")
+        query <- paste0('{"_id": ', document, '}')
+        update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
+        m$update(query = query, update = update)
+        m$disconnect()
+
         next
     }
 
@@ -62,11 +80,20 @@ for (i in 1:length(match_id)) {
 
     ## If the match lasted less than 900 seconds remove
     if (content$content$duration <= duration) {
+        ## delete match_id from collect_match_id
         m <- mongolite::mongo("collect_match_id", "dota")
         query <- paste0('{"_id": "', key, '"}')
         update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
         m$update(query = query, update = update)
         m$disconnect()
+
+        ## delete match_id from match_id_skill
+        m <- mongolite::mongo(paste0("match_id_", skill), "dota")
+        query <- paste0('{"_id": ', document, '}')
+        update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
+        m$update(query = query, update = update)
+        m$disconnect()
+
         next
     }
 
