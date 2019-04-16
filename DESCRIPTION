@@ -18,7 +18,8 @@ Imports:
     xml2,
     rvest,
     tidyr,
-    stringr
+    stringr,
+    R.utils
 License: GPL-3 | file LICENSE
 URL: https://github.com/andryas/RDota2Plus
 Encoding: UTF-8

@@ -18,25 +18,30 @@ collect <- function(type = "collect_id") {
     n_history_matches <- config_info$n_history_matches[[1]]
 
     if (type == "collect_id") {
+        query <- paste0('{"_id": ', as.integer(Sys.Date() - 1), '}')
         m <- mongolite::mongo("track", "dota")
-        m2 <- mongolite::mongo("players", "dota")
-        m3 <- mongolite::mongo("match", "dota")
-        m4 <- mongolite::mongo(paste0("match_id_", skill), "dota")
-        n_player <- m2$info()$stats$count
-        n_match <- m3$info()$stats$count
-        n_id <- length(m4$find(paste0('{"_id": ', as.integer(Sys.Date() - 1) ,'}'))$match_id[[1]])
-        if (is.null(n_player)) n_player <- 0
-        if (is.null(n_match)) n_match <- 0
-        if (is.null(n_id)) n_id <- 0
-        info <- list("_id" = as.integer(Sys.Date() - 1),
-                     date = Sys.Date() - 1,
-                     player = n_player,
-                     match = n_match,
-                     match_id = n_id)
-        m2$disconnect()
-        m3$disconnect()
-        m4$disconnect()
-        m$insert(jsonlite::toJSON(info, auto_unbox = TRUE))
+
+        if (nrow(m$find(query)) == 0) {
+            m2 <- mongolite::mongo("players", "dota")
+            m3 <- mongolite::mongo("match", "dota")
+            m4 <- mongolite::mongo(paste0("match_id_", skill), "dota")
+            n_player <- m2$info()$stats$count
+            n_match <- m3$info()$stats$count
+            n_id <- length(m4$find(paste0('{"_id": ', as.integer(Sys.Date() - 1) ,'}'))$match_id[[1]])
+            if (is.null(n_player)) n_player <- 0
+            if (is.null(n_match)) n_match <- 0
+            if (is.null(n_id)) n_id <- 0
+            info <- list("_id" = as.integer(Sys.Date() - 1),
+                         date = Sys.Date() - 1,
+                         player = n_player,
+                         match = n_match,
+                         match_id = n_id)
+            m2$disconnect()
+            m3$disconnect()
+            m4$disconnect()
+            m$insert(jsonlite::toJSON(info, auto_unbox = TRUE))
+        }
+        
         m$disconnect()
         
         # script <- "/home/andryas/Documentos/github/RDota2Plus/inst/scripts/collect_id.R"
@@ -136,7 +141,8 @@ collect <- function(type = "collect_id") {
             ## Index the field start_time
             m$index(add = '{"start_time": -1}')
         }
-        df <- dplyr::as_tibble(m$find('{"_pi": 0}', sort = '{"start_time": -1}',
+        query <- paste0('{"_pi": 0, "public_account_id": {"$gte": ', public_account_id, '}}')
+        df <- dplyr::as_tibble(m$find(query, sort = '{"start_time": -1}',
                                       limit = 20000))
         m$disconnect()
 
