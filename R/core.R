@@ -54,13 +54,12 @@ collect <- function(type = "collect_id") {
         }
     } else if (type == "collect_match_details") {
         m <- mongolite::mongo(paste0("match_id_", skill), "dota")
-        query <- paste0('{"_id": { "$lt": ', as.integer(Sys.Date() - 1), '}}')
+        query <- paste0('{"_id": { "$lt": ', as.integer(Sys.Date()), '}}')
         fields <- '{"_id": 1, "match_id": 1}'
         df <- dplyr::as_tibble(m$find(query, fields ,'{"_id": -1}', limit = 7))
         m$disconnect()
         
         if (nrow(df) == 0) stop("No matches to collect")
-        
         
         document <- df[1, ]$`_id`[[1]]
         match_id <- df[1, ]$match_id[[1]]

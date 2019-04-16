@@ -17,7 +17,7 @@ game_mode <- configs$game_mode[[1]]
 lobby_type <- configs$lobby_type[[1]]
 skill <- configs$skill[[1]]
 duration <- configs$duration[[1]]
-public_account_id <- configs$public_account_id[[1]]
+# public_account_id <- configs$public_account_id[[1]]
 
 
 for (i in 1:length(match_id)) {
@@ -51,14 +51,14 @@ for (i in 1:length(match_id)) {
     account_id <- account_id[!(account_id %in% c(4294967295))] ## rmv private account_id
 
     # At least 'public_account_id' players with publick account
-    if (length(unique(account_id)) < public_account_id) {
-        m <- mongolite::mongo("collect_match_id", "dota")
-        query <- paste0('{"_id": "', key, '"}')
-        update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
-        m$update(query = query, update = update)
-        m$disconnect()
-        next
-    }
+    # if (length(unique(account_id)) < public_account_id) {
+    #     m <- mongolite::mongo("collect_match_id", "dota")
+    #     query <- paste0('{"_id": "', key, '"}')
+    #     update <- paste0('{"$pull": {"match_id": ', match_id[i], '}}')
+    #     m$update(query = query, update = update)
+    #     m$disconnect()
+    #     next
+    # }
 
     ## If the match lasted less than 900 seconds remove
     if (content$content$duration <= duration) {
