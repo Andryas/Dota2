@@ -29,7 +29,7 @@ for (j in 1:nrow(p)) {
         key = key
     )
 
-    if (is.null(history)) next
+    if (is.null(history$content)) next
     
     ## Get only players match with the lobby_type: ...
     h <- lapply(history$content$matches, function(x) {
