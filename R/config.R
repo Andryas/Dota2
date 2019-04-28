@@ -2,10 +2,10 @@
 #'
 #' @description This function is used to define the settings that will be used to collect the data,
 #'     such as type of game, skill etc ...
-#' 
+#'
 #' @param key The api key obtained from Steam. If you don't have one please visit
 #'  \url{https://steamcommunity.com/dev} in order to do so.
-#' 
+#'
 #' @param game_mode The game mode can be a vector with one or more of these values:
 #' \itemize{
 #'   \item 0 - Unknown
@@ -36,7 +36,7 @@
 #' }
 #'
 #' (Default: 2, 22)
-#' 
+#'
 #' @param lobby_type The lobby type can be a vector with one or more of these values:
 #' \itemize{
 #'   \item 0 - Normal
@@ -50,9 +50,9 @@
 #'   \item 8 - 1v1 Mid
 #'   \item 9 - Battle Cup
 #' }
-#' 
+#'
 #' (Default: 7)
-#' 
+#'
 #' @param skill The skill bracket can be a vector with one or more of these values (except 0):
 #' \itemize{
 #'   \item 0 - Any (If is set with this value, just it will be used)
@@ -62,14 +62,14 @@
 #' }
 #'
 #' (Default: 3)
-#' 
+#'
 #' @param duration The minimum duration of a match in seconds. (Default: 900)
 #' @param public_account_id The minimum of public account's id. (Default: 5)
 #' @param n_history_matches The amount of history matches that must be collected for each player in the
 #'     game. (Default: 10)
 #'
-#' @details The args key can be a vector of available API keys. 
-#' 
+#' @details The args key can be a vector of available API keys.
+#'
 #' @return A message saying that the settings have been logged.
 #'
 #' @examples
@@ -78,7 +78,7 @@
 #' config(key = 'xxxxx-xxxxx')
 #' @export
 
-config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, duration = 900, 
+config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, duration = 900,
                    public_account_id = 5, n_history_matches = 10) {
 
     if (length(skill) != 1) stop("skill must be one number between: 0-3.")
@@ -89,7 +89,7 @@ config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, 
     represents the amount of matches that will be collect from each player in a game.")
     if (!is.numeric(duration)) stop("duration must be a number that represents the minimum of
     time in seconds that a match must have.")
-    
+
     # Check keys
     x <- lapply(key, function(key) {
         x <- try(RDota2::get_heroes(key = key), silent=TRUE)
@@ -102,17 +102,17 @@ config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, 
             return(c(bad = key))
         }
     })
-    
+
     x <- do.call(c, x)
-    
+
     if (any(unique(names(x)) == "bad")) {
-        stop("BAD KEYS: ", paste0(as.vector(x[names(x) == "bad"]),collapse=", "), 
+        stop("BAD KEYS: ", paste0(as.vector(x[names(x) == "bad"]),collapse=", "),
             '\n Please make sure these keys are working or try again.')
     }
     x <- as.vector(x[names(x) == "good"])
 
     if (length(x) == 0) stop("All keys are bad. Please check the keys or try again.")
-    
+
     m <- mongolite::mongo("config", "dota")
     query <- paste0('{"_id": "config"}')
     update <- paste0('{ "$addToSet": { "keyapi": { "$each": ', jsonlite::toJSON(key), '}}}')
@@ -130,7 +130,7 @@ config <- function(key = NULL, game_mode = c(2, 22), lobby_type = 7, skill = 3, 
     # print(as.list(m$find()[1, ]))
     cat("\n\n\tYour settings for collecting Dota 2 matches have been recorded.",
         "\n\tIf you want to change something in the future just re-run this",
-        "\n\tfunction with the settings you want.\n\n")
-    
+        "\n\tfunction with the new settings.\n\n")
+
     m$disconnect()
 }

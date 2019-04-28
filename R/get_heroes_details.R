@@ -1,28 +1,29 @@
 #' @title Details about each hero
 #'
-#' @description Details about each hero such as STR, AGI, INT, Range of day vision or night etc...
+#' @description Details about each hero such as STR, AGI, INT, Range of day vision etc... from
+#' http://www.dota2.com/heroes/.
 #'
 #' @param key The api key obtained from Steam. If you don't have one please visit
 #'  \url{https://steamcommunity.com/dev} in order to do so.
-#' @param estimate_hero Estimate the winrate and the proportion of times that the hero was presented
-#'     in the match.
+#' @param estimate_hero Estimate the winrate and the proportion of times that the hero was chosen.
 #' @param verbose If FALSE do not appears nothing just save the date in mongodb else appears somes
 #'     output. (Default: TRUE)
-#' @param limit The amount of matches used to estime winrate and proportion if estimate_hero equals TRUE.
+#' @param limit The amount of matches used to estime winrate and the proportion when estimate_hero
+#' equals TRUE.
 #'
 #' @return A data frame where each row contains a hero and it attributes with some estimated
 #'     statistics from the data collected.
 #'
 #' @details If estimate_hero is TRUE then the function will estimate the winrate and the proportion
-#'     of times that the hero was choosed. However this will take a while to be done. 
-#' 
+#'     of times that the hero was choosed. However this will take a while to be done.
+#'
 #' @examples
 #' df <- get_hero_detais(key = 'xxxxx-xxxxx')
 #' head(df)
 #'
 #' @export
 
-get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit = 150000) {
+get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit = 100000) {
     `%>%` <-  dplyr::`%>%`
 
     heroes <- RDota2::get_heroes(key = key)$content
@@ -31,11 +32,17 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
     myhtmlparse <- function(url) {
         httr::GET(url) %>%
             httr::content('text') %>%
-                xml2::read_html()
+            xml2::read_html()
+    }
+
+    if (isTRUE(verbose)) {
+        cat("\t\t Getting data from http://www.dota2.com/heroes/ \n\n")
     }
 
     scrap <- function(sel_hero) {
-        cat("\t", sel_hero, sep = "\n")
+        if (isTRUE(verbose)) {
+            cat("\t", sel_hero, sep = "\n")
+        }
 
         url <- "http://www.dota2.com/heroes/"
         h <- myhtmlparse(url)
@@ -119,51 +126,11 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
         ability_desc <- dplyr::tibble(ability = magias,
                                       desc = desc)
 
-        # ability1 <- h2 %>%
-        #     html_node(xpath = "//div[@class='abilityFooterBox']") %>%
-        #     html_node(xpath = "div[@class='abilityFooterBoxLeft']") %>%
-        #     rvest::html_text() %>%
-        #     stringr::str_replace_all("\r|\n|\t", " ") %>%
-        #     str_extract_all("[A-Z|\\s]+(?=:)") %>%
-        #     do.call(c, .) %>%
-        #     trimws()
-        #
-        # ability2 <- h2 %>%
-        #     html_node(xpath = "//div[@class='abilityFooterBox']") %>%
-        #     html_node(xpath = "div[@class='abilityFooterBoxLeft']//span") %>%
-        #     rvest::html_text()
-        #
-        # ability3 <- h2 %>%
-        #     rvest::html_nodes(xpath = "//div[@class='abilityFooterBox']") %>%
-        #     rvest::html_nodes(xpath = "div[@class='abilityFooterBoxRight']") %>%
-        #     rvest::html_text() %>%
-        #     stringr::str_replace_all("\r|\n|\t", " ") %>%
-        #     str_extract_all("[A-Z|\\s]+(?=:)") %>%
-        #     do.call(c, .) %>%
-        #     trimws()
-        #
-        # ability4 <- h2 %>%
-        #     rvest::html_nodes(xpath = "//div[@class='abilityFooterBox']") %>%
-        #     rvest::html_nodes(xpath = "div[@class='abilityFooterBoxRight']//span[@class='attribVal']") %>%
-        #     rvest::html_text()
-        #
-        # ability_1 <- c(ability1, ability3)
-        # ability_2 <- c(ability2, ability4)
-        #
-        # cbind(ability_1, ability_2)
-        #
-        # ability <- tibble(ability = rep(magias, each = 4),
-        #                   type = ability_1,
-        #                   value = ability_2)
-
         atr$hero <- sel_hero
         ability_desc$hero <- sel_hero
-        # ability$hero <- hero
-
 
         atr <- tidyr::nest(atr, -hero, .key = "atr")
         ability_desc <- tidyr::nest(ability_desc, -hero, .key = "ability_desc")
-        # ability <- nest(ability, -hero, .key = "ability")
 
         ## Scrap final
         scrap <- dplyr::tibble(hero = sel_hero,
@@ -175,7 +142,7 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
                                alcvis = alcvis, # alcance da visao dia/noite
                                alcatq = alcatq,  # alcance do ataque
                                velproj = velproj,
-                               )
+        )
 
         scrap <- dplyr::left_join(scrap, atr, by = "hero")
         scrap <- dplyr::left_join(scrap, ability_desc, by = "hero")
@@ -188,8 +155,8 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
     x <- lapply(heroes$name, scrap)
     x <- dplyr::bind_rows(x)
     x <- dplyr::left_join(x, heroes %>%
-                             dplyr::rename(hero = "name") %>%
-                             dplyr::select(hero, id), by = "hero")
+                              dplyr::rename(hero = "name") %>%
+                              dplyr::select(hero, id), by = "hero")
 
     split_atr <- function(x, atr) {
         ATR <- x %>% dplyr::select(!!atr) %>% dplyr::pull()
@@ -240,7 +207,7 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
     }) %>%
         do.call(rbind, .) %>%
         dplyr::bind_cols(x, .) %>%
-    dplyr::select(-alcvis)
+        dplyr::select(-alcvis)
 
     # Create a vector to the mainly roles of the hero
     bioroles <- lapply(strsplit(x$bioroles, "-"), trimws)
@@ -265,7 +232,11 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
         dplyr::select(id, hero, dplyr::everything())
 
     if (isTRUE(estimate_hero)) {
-        m <- mongolite::mongo("match", "dota2")
+        if (isTRUE(verbose)) {
+            cat("\t\t Connecting with MongDB and getting the data. \n\n")
+        }
+
+        m <- mongolite::mongo("match", "dota")
 
         df_hero <- dplyr::tibble()
         df_heroa <- dplyr::tibble()
@@ -273,21 +244,24 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
         match_id <- NULL
 
         while (TRUE) {
-            print(length(match_id))
+            if (isTRUE(verbose)) {
+                cat("\t Size sync: ", length(match_id))
+            }
+
             match_id_search <- ifelse(is.null(match_id), "[]", jsonlite::toJSON(match_id))
 
             df <- m$find(paste0('{"game_mode": 22,',
                                 '"_id":{ "$nin":', match_id_search,' }}'),
                          paste0('{"radiant_win": 1, "players.ability_upgrades": 1,',
                                 '"match_id": 1,  "players.hero_id": 1}'),
-                         limit = 10000
-                         )
+                         limit = 5000
+            )
 
             if (nrow(df) == 0 | length(match_id) >= limit) {
                 out <- list(N = N_total,
                             hero = df_hero,
                             hero_ability = df_heroa
-                            )
+                )
                 break
             } else {
 
@@ -338,7 +312,7 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
                 df_hero <- dplyr::bind_rows(df_hero, heroes) %>%
                     dplyr::group_by(hero_id) %>%
                     dplyr::summarise(win = sum(win),
-                                     n = sum(n)) %>%  
+                                     n = sum(n)) %>%
                     dplyr::ungroup()
 
                 df_heroa <- dplyr::bind_rows(df_heroa, heroesa) %>%
@@ -367,7 +341,7 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
             dplyr::summarise(prob_up = n/N,
                              n = n,
                              N = N
-                             ) %>%
+            ) %>%
             dplyr::ungroup() %>%
             tidyr::nest(-hero_id, .key = ability_up)
 
@@ -376,15 +350,24 @@ get_heroes_details <- function(key, estimate_hero = FALSE, verbose = TRUE, limit
             dplyr::left_join(hero, by = "hero_id") %>%
             dplyr::left_join(hero_ability, by = "hero_id")
 
-        m <- mongolite::mongo("config", "dota")
-        query <- '{"_id": "hero_details"}'
-        update <- jsonlite::toJSON(list("$set"=as.list(df)))
-        m$update(query, update, upsert = TRUE)
+        m <- mongolite::mongo("heroes", "dota")
+        m$drop()
+        m$insert(df)
         m$disconnect()
-        
+
+        cat("\n\n\t\tDone!")
+
         return(df)
     } else {
-        ## add info from mongodb if exists
+        m <- mongolite::mongo("match", "dota")
+        df <- df %>%
+            dplyr::rename(hero_id = "id")
+        m$drop()
+        m$insert(df)
+        m$disconnect()
+
+        cat("\n\n\t\t Done!")
+
         return(df)
     }
 }
